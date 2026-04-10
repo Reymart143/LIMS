@@ -35,7 +35,7 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>LF 00-01</td>
+                                            <td>LR 00-01</td>
                                             <td>CROSS-REFERENCE OF QUALITY MANUAL SYSTEM TO PNS 1SO/IEC 17025:2017</td>
                                             <td>Laboratory Record</td>
                                             <td>0</td>

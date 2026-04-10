@@ -51,6 +51,11 @@ use App\Http\Controllers\LaboratoryRecordController;
     Route::get('/SOP/index',[StandardOperatingProcedureController::class,'index'])->name('SOP/index');
      //Log Form
     Route::get('/LF/index',[LogFormController::class,'index'])->name('LF/index');
+    Route::get('/lf_03_05',[LogFormController::class,'lf_03_05'])->name('lf_03_05');
+    Route::post('/lf_03_05.store',[LogFormController::class,'store'])->name('lf_03_05.store');
+    Route::get('/equipments_book.index/{id}',[LogFormController::class,'equipments'])->name('equipments_book.index');
+    Route::post('/equipments.store',[LogFormController::class,'equipment_store'])->name('equipments.store');
+   
      //Laboratory Record
     Route::get('/LR/index',[LaboratoryRecordController::class,'index'])->name('LR/index');
      //Work Instruction

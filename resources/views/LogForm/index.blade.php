@@ -28,24 +28,24 @@
                                             <th>Document Type</th>
                                             <th>Revision No.</th>
                                             <th>Date Adopted</th>
-                                            <th>Page No.</th>
+                                            {{-- <th>Page No.</th> --}}
                                             
                                             <th style="min-width: 100px">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>QM 1-00</td>
-                                            <td>SCOPE AND QUALITY POLICY</td>
-                                            <td>Quality Manual</td>
+                                            <td>LF 00-01</td>
+                                            <td>CROSS-REFERENCE OF QUALITY MANUAL SYSTEM TO PNS 1SO/IEC 17025:2017</td>
+                                            <td>Laboratory Record</td>
                                             <td>0</td>
                                             <td>13 , Aug 2019
                                             </td>
-                                            <td>Page 1</td>
+                                            {{-- <td>Page 1</td> --}}
                                             <td>
                                                 <div class="flex align-items-center list-user-action">
                                                     <a class="btn btn-sm btn-icon btn-primary"
-                                                    onclick="openPDF('{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.pdf') }}')"
+                                                    onclick="openPDF('{{ asset('LF/LF00-08.pdf') }}')"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#viewPdfModal"
                                                     title="View Details">
@@ -54,7 +54,7 @@
                                                         </span>
                                                     </a>
                                                     <a class="btn btn-sm btn-icon btn-success"
-                                                        href="{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.pdf') }}"
+                                                        href="{{ asset('LF/LF00-08.pdf') }}"
                                                         download
                                                         data-bs-toggle="tooltip"
                                                         title="Download">
@@ -67,17 +67,17 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>QM 1-01</td>
-                                            <td>IMPARTIALITY</td>
-                                            <td>Quality Manual</td>
+                                            <td>LF 00-09</td>
+                                            <td>TRANSMITTAL SHEET FOR ELECTRONIC DOCUMENTS</td>
+                                            <td>Laboratory Form</td>
                                             <td>0</td>
-                                            <td>13 , Aug 2019
+                                            <td>03 February 2025
                                             </td>
-                                            <td>Page 1</td>
+                                            {{-- <td>Page 1</td> --}}
                                             <td>
                                                 <div class="flex align-items-center list-user-action">
                                                     <a class="btn btn-sm btn-icon btn-primary"
-                                                    onclick="openPDF('{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.pdf') }}')"
+                                                    onclick="openPDF('{{ asset('LF/LF00-09,TransmittalSheetforElectronicDocuments.pdf') }}')"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#viewPdfModal"
                                                     title="View Details">
@@ -86,7 +86,7 @@
                                                         </span>
                                                     </a>
                                                     <a class="btn btn-sm btn-icon btn-success"
-                                                        href="{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.docx') }}"
+                                                        href="{{ asset('LF/LF00-09,TransmittalSheetforElectronicDocuments.pdf') }}"
                                                         download
                                                         data-bs-toggle="tooltip"
                                                         title="Download">
@@ -99,17 +99,17 @@
                                             </td>
                                         </tr>
                                          <tr>
-                                            <td>QM 1-02</td>
-                                            <td>CONFIDENTIALITY</td>
-                                            <td>Quality Manual</td>
+                                            <td>LF 01-03</td>
+                                            <td>AUTHORIZATION OF SCOPE OF WORK (Document Control Officer)</td>
+                                            <td>Laboratory Form</td>
                                             <td>0</td>
-                                            <td>13 , Aug 2019
+                                            <td>18 May 2022
                                             </td>
-                                            <td>Page 1</td>
+                                            {{-- <td>Page 1</td> --}}
                                             <td>
                                                 <div class="flex align-items-center list-user-action">
                                                     <a class="btn btn-sm btn-icon btn-primary"
-                                                    onclick="openPDF('{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.pdf') }}')"
+                                                    onclick="openPDF('{{ asset('LF/LF01-03WaiverofAuthorization(DocumentControlOfficer).pdf') }}')"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#viewPdfModal"
                                                     title="View Details">
@@ -118,7 +118,7 @@
                                                         </span>
                                                     </a>
                                                     <a class="btn btn-sm btn-icon btn-success"
-                                                        href="{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.docx') }}"
+                                                        href="{{ asset('LF/LF01-03WaiverofAuthorization(DocumentControlOfficer).pdf') }}"
                                                         download
                                                         data-bs-toggle="tooltip"
                                                         title="Download">
@@ -131,17 +131,17 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>QM 2-01</td>
-                                            <td>ORGANIZATION AND MANAGEMENT</td>
-                                            <td>Quality Manual</td>
+                                             <td>LF 01-03</td>
+                                            <td>AUTHORIZATION OF SCOPE OF WORK (Fish Health Analyst 2) </td>
+                                            <td>Laboratory Form</td>
                                             <td>0</td>
-                                            <td>13 , Aug 2019
+                                            <td>18 May 2022
                                             </td>
-                                            <td>Page 1</td>
+                                            {{-- <td>Page 1</td> --}}
                                             <td>
                                                 <div class="flex align-items-center list-user-action">
                                                     <a class="btn btn-sm btn-icon btn-primary"
-                                                    onclick="openPDF('{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.pdf') }}')"
+                                                    onclick="openPDF('{{ asset('LF/LF01-03WaiverofAuthorization(FishHealthAnalyst2).pdf') }}')"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#viewPdfModal"
                                                     title="View Details">
@@ -150,7 +150,7 @@
                                                         </span>
                                                     </a>
                                                     <a class="btn btn-sm btn-icon btn-success"
-                                                        href="{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.docx') }}"
+                                                        href="{{ asset('LF/LF01-03WaiverofAuthorization(FishHealthAnalyst2).pdf') }}"
                                                         download
                                                         data-bs-toggle="tooltip"
                                                         title="Download">
@@ -163,17 +163,17 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>QM 3-01</td>
-                                            <td>GENERAL RESOURCE REQUIREMENTS</td>
-                                            <td>Quality Manual</td>
+                                            <td>LF 01-03</td>
+                                            <td>AUTHORIZATION OF SCOPE OF WORK (Laboratory Aide and Safety Officer)</td>
+                                            <td>Laboratory Form</td>
                                             <td>0</td>
-                                            <td>13 , Aug 2019
+                                            <td>18 May 2022
                                             </td>
-                                            <td>Page 1</td>
+                                            {{-- <td>Page 1</td> --}}
                                             <td>
                                                 <div class="flex align-items-center list-user-action">
                                                     <a class="btn btn-sm btn-icon btn-primary"
-                                                    onclick="openPDF('{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.pdf') }}')"
+                                                    onclick="openPDF('{{ asset('LF/LF01-03WaiverofAuthorization(LaboratoryAideandSafetyOfficer).pdf') }}')"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#viewPdfModal"
                                                     title="View Details">
@@ -182,7 +182,7 @@
                                                         </span>
                                                     </a>
                                                     <a class="btn btn-sm btn-icon btn-success"
-                                                        href="{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.docx') }}"
+                                                        href="{{ asset('LF/LF01-03WaiverofAuthorization(LaboratoryAideandSafetyOfficer).pdf') }}"
                                                         download
                                                         data-bs-toggle="tooltip"
                                                         title="Download">
@@ -195,17 +195,17 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>QM 3-02</td>
-                                            <td>PERSONNEL</td>
-                                            <td>Quality Manual</td>
+                                            <td>LF 01-03</td>
+                                            <td>AUTHORIZATION OF SCOPE OF WORK (Microbiology Analyst)</td>
+                                            <td>Laboratory Form</td>
                                             <td>0</td>
-                                            <td>13 , Aug 2019
+                                            <td>18 May 2022
                                             </td>
-                                            <td>Page 1</td>
+                                            {{-- <td>Page 1</td> --}}
                                             <td>
                                                 <div class="flex align-items-center list-user-action">
                                                     <a class="btn btn-sm btn-icon btn-primary"
-                                                    onclick="openPDF('{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.pdf') }}')"
+                                                    onclick="openPDF('{{ asset('LF/LF01-03WaiverofAuthorization(MicrobiologyAnalyst).pdf') }}')"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#viewPdfModal"
                                                     title="View Details">
@@ -214,7 +214,7 @@
                                                         </span>
                                                     </a>
                                                     <a class="btn btn-sm btn-icon btn-success"
-                                                        href="{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.docx') }}"
+                                                        href="{{ asset('LF/LF01-03WaiverofAuthorization(MicrobiologyAnalyst).pdf') }}"
                                                         download
                                                         data-bs-toggle="tooltip"
                                                         title="Download">
@@ -227,17 +227,17 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>QM 3-03</td>
-                                            <td>FACILITIES AND ENVIRONMENTAL CONDITIONS </td>
-                                            <td>Quality Manual</td>
+                                            <td>LF 01-03</td>
+                                            <td>AUTHORIZATION OF SCOPE OF WORK (Purchase Service Officer) </td>
+                                            <td>Laboratory Form</td>
                                             <td>0</td>
-                                            <td>13 , Aug 2019
+                                            <td>18 May 2022
                                             </td>
-                                            <td>Page 1</td>
+                                            {{-- <td>Page 1</td> --}}
                                             <td>
                                                 <div class="flex align-items-center list-user-action">
                                                     <a class="btn btn-sm btn-icon btn-primary"
-                                                    onclick="openPDF('{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.pdf') }}')"
+                                                    onclick="openPDF('{{ asset('LF/LF01-03WaiverofAuthorization(PurchaseServiceOfficer).pdf') }}')"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#viewPdfModal"
                                                     title="View Details">
@@ -246,7 +246,7 @@
                                                         </span>
                                                     </a>
                                                     <a class="btn btn-sm btn-icon btn-success"
-                                                        href="{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.docx') }}"
+                                                        href="{{ asset('LF/LF01-03WaiverofAuthorization(PurchaseServiceOfficer).pdf') }}"
                                                         download
                                                         data-bs-toggle="tooltip"
                                                         title="Download">
@@ -259,17 +259,17 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>QM 3-04</td>
-                                            <td>EQUIPMENT </td>
-                                            <td>Quality Manual</td>
+                                            <td>LF 01-03</td>
+                                            <td>AUTHORIZATION OF SCOPE OF WORK (Quality Assurance Manager) </td>
+                                            <td>Laboratory Form</td>
                                             <td>0</td>
-                                            <td>13 , Aug 2019
+                                            <td>18 May 2022
                                             </td>
-                                            <td>Page 1</td>
+                                            {{-- <td>Page 1</td> --}}
                                             <td>
                                                 <div class="flex align-items-center list-user-action">
                                                     <a class="btn btn-sm btn-icon btn-primary"
-                                                    onclick="openPDF('{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.pdf') }}')"
+                                                    onclick="openPDF('{{ asset('LF/LF01-03WaiverofAuthorization(QualityAssuranceManager).pdf') }}')"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#viewPdfModal"
                                                     title="View Details">
@@ -278,7 +278,7 @@
                                                         </span>
                                                     </a>
                                                     <a class="btn btn-sm btn-icon btn-success"
-                                                        href="{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.docx') }}"
+                                                        href="{{ asset('LF/LF01-03WaiverofAuthorization(QualityAssuranceManager).pdf') }}"
                                                         download
                                                         data-bs-toggle="tooltip"
                                                         title="Download">
@@ -291,17 +291,17 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>QM 3-05</td>
-                                            <td>METROLOGICAL TRACEABILITY</td>
-                                            <td>Quality Manual</td>
+                                            <td>LF 01-06</td>
+                                            <td>PERSONNEL COMPETENCE ASSESSMENT </td>
+                                            <td>Laboratory Form</td>
                                             <td>0</td>
                                             <td>13 , Aug 2019
                                             </td>
-                                            <td>Page 1</td>
+                                            {{-- <td>Page 1</td> --}}
                                             <td>
                                                 <div class="flex align-items-center list-user-action">
                                                     <a class="btn btn-sm btn-icon btn-primary"
-                                                    onclick="openPDF('{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.pdf') }}')"
+                                                    onclick="openPDF('{{ asset('LF/LF01-06PersonnelCompetenceAssessmentRevised2025.pdf') }}')"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#viewPdfModal"
                                                     title="View Details">
@@ -310,7 +310,7 @@
                                                         </span>
                                                     </a>
                                                     <a class="btn btn-sm btn-icon btn-success"
-                                                        href="{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.docx') }}"
+                                                        href="{{ asset('LF/LF01-06PersonnelCompetenceAssessmentRevised2025.pdf') }}"
                                                         download
                                                         data-bs-toggle="tooltip"
                                                         title="Download">
@@ -323,21 +323,21 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>QM 3-06</td>
-                                            <td>EXTERNALLY PROVIDED PRODUCTS AND SERVICES </td>
-                                            <td>Quality Manual</td>
+                                            <td>LF 03-05</td>
+                                            <td>EQUIPMENT USAGE AND MAINTENANCE LOGBOOK </td>
+                                            <td>Laboratory Form</td>
                                             <td>0</td>
                                             <td>13 , Aug 2019
                                             </td>
-                                            <td>Page 1</td>
+                                            {{-- <td>Page 1</td> --}}
                                             <td>
                                                 <div class="flex align-items-center list-user-action">
-                                                    <a class="btn btn-sm btn-icon btn-primary"
-                                                    onclick="openPDF('{{ asset('QualityManual/QM1-00,ScopeandQualityPolicy.pdf') }}')"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#viewPdfModal"
-                                                    title="View Details">
-                                                         <span class="btn-inner">
+                                                    <a class="btn btn-sm btn-icon btn-warning"
+                                                        href="/lf_03_05"
+                                                        data-bs-toggle="tooltip"
+                                                        title="View Data">
+
+                                                        <span class="btn-inner">
                                                             <svg class="icon-32" width="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22.4541 11.3918C22.7819 11.7385 22.7819 12.2615 22.4541 12.6082C21.0124 14.1335 16.8768 18 12 18C7.12317 18 2.98759 14.1335 1.54586 12.6082C1.21811 12.2615 1.21811 11.7385 1.54586 11.3918C2.98759 9.86647 7.12317 6 12 6C16.8768 6 21.0124 9.86647 22.4541 11.3918Z" fill="currentColor"></path><circle cx="12" cy="12" r="5" fill="#918F98"></circle>                                <circle cx="12" cy="12" r="3" fill="#130F26"></circle>                                <mask mask-type="alpha" maskUnits="userSpaceOnUse" x="9" y="9" width="6" height="6">                                <circle cx="12" cy="12" r="3" fill="#130F26"></circle>                                </mask>                                <circle opacity="0.89" cx="13.5" cy="10.5" r="1.5" fill="white" fill-opacity="0.6"></circle></svg>                                                              
                                                         </span>
                                                     </a>
@@ -351,6 +351,7 @@
                                                             <svg class="icon-32" width="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.2301 7.29052V3.2815C11.2301 2.85523 11.5701 2.5 12.0001 2.5C12.3851 2.5 12.7113 2.79849 12.763 3.17658L12.7701 3.2815V7.29052L17.55 7.29083C19.93 7.29083 21.8853 9.23978 21.9951 11.6704L22 11.8861V16.9254C22 19.373 20.1127 21.3822 17.768 21.495L17.56 21.5H6.44C4.06 21.5 2.11409 19.5608 2.00484 17.1213L2 16.9047L2 11.8758C2 9.4281 3.87791 7.40921 6.22199 7.29585L6.43 7.29083H11.23V13.6932L9.63 12.041C9.33 11.7312 8.84 11.7312 8.54 12.041C8.39 12.1959 8.32 12.4024 8.32 12.6089C8.32 12.7659 8.3648 12.9295 8.45952 13.0679L8.54 13.1666L11.45 16.1819C11.59 16.3368 11.79 16.4194 12 16.4194C12.1667 16.4194 12.3333 16.362 12.4653 16.2533L12.54 16.1819L15.45 13.1666C15.75 12.8568 15.75 12.3508 15.45 12.041C15.1773 11.7594 14.7475 11.7338 14.4462 11.9642L14.36 12.041L12.77 13.6932V7.29083L11.2301 7.29052Z" fill="currentColor"></path></svg>                        
                                                         </span>
                                                     </a>
+                                                  
                                                 </div>
                                             </td>
                                         </tr>

@@ -154,10 +154,10 @@
                 </div>
 
                    <div class="card-body">
-                    <div class="d-flex ">
-                    {{ $clients->links('pagination::bootstrap-5') }}
+                        <div class="d-flex ">
+                        {{ $clients->links('pagination::bootstrap-5') }}
+                    </div>
                 </div>
-            </div>
             </div>
         </div>
     </div>
