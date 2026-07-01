@@ -23,6 +23,7 @@ use App\Http\Controllers\SterilityCheckController;
 use App\Http\Controllers\HealthCertificateController;
 use App\Http\Controllers\CitizenCharterSurveyController;
 use App\Http\Controllers\TextBlastController;
+use App\Http\Controllers\EquipmentController;
 
  Route::get('/login', function () {
         if (Auth::check()) {
@@ -168,6 +169,8 @@ use App\Http\Controllers\TextBlastController;
     Route::get('/Reporttest/download/pdf/{id}', [LogFormController::class, 'ReportTestdownloadPdf'])->name('Reporttest.download.pdf');
     //Text Blast
     Route::get('/text_blast',[TextBlastController::class,'index'])->name('text_blast');
+    //Equipments
+    Route::get('/equipments',[EquipmentController::class,'index'])->name('equipments.index');
  });
     //ARTA SURVEY
     Route::get('/arta.create', [CitizenCharterSurveyController::class, 'arta'])->name('arta.create');
