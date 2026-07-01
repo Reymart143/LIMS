@@ -6,28 +6,33 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('equipments', function (Blueprint $table) {
+        Schema::create('equipment', function (Blueprint $table) {
             $table->id();
-            $table->string('equipment_name');
-            $table->string('control_no')->unique();
-            $table->string('quantity');
-            $table->string('unit');
+            $table->string('equipment');
+            $table->string('equipment_no')->unique();
+            $table->integer('qty')->default(0);
+            $table->string('unit')->nullable();
             $table->string('rfl_control_no')->nullable();
-            $table->string('description')->nullable();
+            $table->text('description')->nullable();
+            $table->string('brand_model')->nullable();
+            $table->date('date_acquired')->nullable();
+            $table->decimal('unit_cost', 10, 2)->default(0);
+            $table->decimal('total_cost', 12, 2)->default(0);
+            $table->text('status_remarks')->nullable();
+            $table->integer('received_quantity')->default(0);
+            $table->integer('used_quantity')->default(0);
+            $table->integer('balance_quantity')->default(0);
+            $table->string('location')->nullable();
+            $table->json('person_in_charge')->nullable();
+            $table->text('updates')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('equipments');
+        Schema::dropIfExists('equipment');
     }
 };

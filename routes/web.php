@@ -72,7 +72,7 @@ use App\Http\Controllers\EquipmentController;
     Route::get('/lf_03_05',[LogFormController::class,'lf_03_05'])->name('lf_03_05');
     Route::post('/lf_03_05.store',[LogFormController::class,'store'])->name('lf_03_05.store');
     Route::get('/equipments_book.index/{id}',[LogFormController::class,'equipments'])->name('equipments_book.index');
-    Route::post('/equipments.store',[LogFormController::class,'equipment_store'])->name('equipments.store');
+    Route::post('/equipments_lf_03_05.store',[LogFormController::class,'equipment_store'])->name('equipments_lf_03_05.store');
     //Laboratory Record
     Route::get('/LR/index',[LaboratoryRecordController::class,'index'])->name('LR/index');
     //Work Instruction
@@ -169,9 +169,18 @@ use App\Http\Controllers\EquipmentController;
     Route::get('/Reporttest/download/pdf/{id}', [LogFormController::class, 'ReportTestdownloadPdf'])->name('Reporttest.download.pdf');
     //Text Blast
     Route::get('/text_blast',[TextBlastController::class,'index'])->name('text_blast');
-    //Equipments
+//Equipments
     Route::get('/equipments',[EquipmentController::class,'index'])->name('equipments.index');
- });
+    Route::get('/equipments/export',[EquipmentController::class,'export'])->name('equipments.export');
+    Route::get('/equipments/create',[EquipmentController::class,'create'])->name('equipments.create');
+    Route::post('/equipments',[EquipmentController::class,'store'])->name('equipments.store');
+    Route::get('/equipments/{id}/edit',[EquipmentController::class,'edit'])->name('equipments.edit');
+    Route::put('/equipments/{id}',[EquipmentController::class,'update'])->name('equipments.update');
+    Route::delete('/equipments/{id}',[EquipmentController::class,'destroy'])->name('equipments.destroy');
+    Route::get('/api/equipments/search',[EquipmentController::class,'searchEquipment'])->name('api.equipments.search');
+    Route::get('/api/equipments/{id}/details',[EquipmentController::class,'getEquipmentDetails'])->name('api.equipments.details');
+    Route::get('/api/users/search',[EquipmentController::class,'getUsers'])->name('api.users.search');
+  });
     //ARTA SURVEY
     Route::get('/arta.create', [CitizenCharterSurveyController::class, 'arta'])->name('arta.create');
     Route::get('/citizen-charter-survey', [CitizenCharterSurveyController::class, 'index'])->name('citizen-charter-survey.index');
