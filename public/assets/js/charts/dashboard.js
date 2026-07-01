@@ -35,6 +35,7 @@ if (document.querySelectorAll('#myChart').length) {
     })
   }
 }
+
 if (document.querySelectorAll('#d-activity').length) {
     const options = {
       series: [{
@@ -114,13 +115,19 @@ if (document.querySelectorAll('#d-activity').length) {
     })
   }
 if (document.querySelectorAll('#d-main').length) {
+  const chartData = window.chartData || {
+    months: [],
+    totalRla: [],
+    totalRelease: []
+  };
+
   const options = {
       series: [{
-          name: 'total',
-          data: [94, 80, 94, 80, 94, 80, 94]
+          name: 'Total RLA',
+          data: chartData.totalRla
       }, {
-          name: 'pipline',
-          data: [72, 60, 84, 60, 74, 60, 78]
+          name: 'Total Release',
+          data: chartData.totalRelease
       }],
       chart: {
           fontFamily: '"Inter", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
@@ -141,34 +148,41 @@ if (document.querySelectorAll('#d-main').length) {
           curve: 'smooth',
           width: 3,
       },
-      yaxis: {
-        show: true,
-        labels: {
+        yaxis: {
           show: true,
-          minWidth: 19,
-          maxWidth: 19,
-          style: {
-            colors: "#8A92A6",
+          forceNiceScale: true,
+          decimalsInFloat: 0,
+
+          labels: {
+              show: true,
+              minWidth: 19,
+              maxWidth: 19,
+              style: {
+                  colors: "#8A92A6",
+              },
+              offsetX: -5,
+
+              formatter: function (value) {
+                  return parseInt(value);
+              }
           },
-          offsetX: -5,
-        },
       },
       legend: {
           show: false,
       },
       xaxis: {
           labels: {
-              minHeight:22,
-              maxHeight:22,
+              minHeight: 22,
+              maxHeight: 22,
               show: true,
               style: {
                 colors: "#8A92A6",
               },
           },
           lines: {
-              show: false  //or just here to disable only x axis grids
+              show: false
           },
-          categories: ["Jan", "Feb", "Mar", "Apr", "Jun", "Jul", "Aug"]
+          categories: chartData.months
       },
       grid: {
           show: false,
@@ -179,7 +193,7 @@ if (document.querySelectorAll('#d-main').length) {
               shade: 'dark',
               type: "vertical",
               shadeIntensity: 0,
-              gradientToColors: undefined, // optional, if not defined - uses the shades of same color in series
+              gradientToColors: undefined,
               inverseColors: true,
               opacityFrom: .4,
               opacityTo: .1,
@@ -194,8 +208,8 @@ if (document.querySelectorAll('#d-main').length) {
 
   const chart = new ApexCharts(document.querySelector("#d-main"), options);
   chart.render();
+
   document.addEventListener('ColorChange', (e) => {
-    console.log(e)
     const newOpt = {
       colors: [e.detail.detail1, e.detail.detail2],
       fill: {
@@ -204,17 +218,18 @@ if (document.querySelectorAll('#d-main').length) {
             shade: 'dark',
             type: "vertical",
             shadeIntensity: 0,
-            gradientToColors: [e.detail.detail1, e.detail.detail2], // optional, if not defined - uses the shades of same color in series
+            gradientToColors: [e.detail.detail1, e.detail.detail2],
             inverseColors: true,
             opacityFrom: .4,
             opacityTo: .1,
             stops: [0, 50, 60],
             colors: [e.detail.detail1, e.detail.detail2],
         }
-    },
-   }
-    chart.updateOptions(newOpt)
-  })
+      },
+    };
+
+    chart.updateOptions(newOpt);
+  });
 }
 if ($('.d-slider1').length > 0) {
     const options = {

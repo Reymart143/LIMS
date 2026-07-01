@@ -73,6 +73,8 @@
                                  <option value="4" {{ $user->role == 4 ? 'selected' : '' }}>Laboratory Analyst - Fish Health Unit</option>
                                  <option value="5" {{ $user->role == 5 ? 'selected' : '' }}>Customer Service Officer</option>
                                  <option value="6" {{ $user->role == 6 ? 'selected' : '' }}>Utility</option>
+                                 <option value="6" {{ $user->role == 7 ? 'selected' : '' }}>Laboratory Analyst - Chemistry Unit </option>
+                               
 
                             </select>
                         </div>

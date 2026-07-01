@@ -99,7 +99,9 @@ class ClientController extends Controller
 
             return redirect()->back()->with('success', 'Client information updated successfully!');
     }
-
+    public function kiosk(){
+        return view('kiosk');
+    }
     /**
      * Remove the specified resource from storage.
      */

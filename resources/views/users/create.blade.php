@@ -85,6 +85,7 @@
                               <option value="4">Laboratory Analyst - Fish Health Unit </option>
                               <option value="5">Customer Service Officer</option>
                               <option value="6">Utility </option>
+                               <option value="7">Laboratory Analyst - Chemistry Unit </option>
                            </select>
                         </div>
                         <div class="form-group">

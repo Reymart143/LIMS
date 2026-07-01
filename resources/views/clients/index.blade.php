@@ -30,10 +30,8 @@
                                         <tr class="light">
                                             <th>Company Name</th>
                                             <th>Contact</th>
-                                            <th>Source Sample</th>
-                                            <th>Sample Description</th>
+                                           
                                             <th>Status</th>
-                                            <th>Species</th>
                                             <th>Join Date</th>
                                             <th style="min-width: 100px">Action</th>
                                         </tr>
@@ -43,8 +41,8 @@
                                         <tr>
                                             <td>{{ $client->company_name }}</td>
                                             <td>{{ $client->contact_no ?? 'N/A' }}</td>
-                                            <td>{{ $client->source_sample ?? 'N/A' }}</td>
-                                            <td>{{ $client->sample_description ?? 'N/A' }}</td>
+                                            {{-- <td>{{ $client->source_sample ?? 'N/A' }}</td>
+                                            <td>{{ $client->sample_description ?? 'N/A' }}</td> --}}
                                             <td>
                                                 @if($client->status == 0)
                                                     <span class="badge bg-success">Active</span>
@@ -52,7 +50,7 @@
                                                     <span class="badge bg-secondary">Inactive</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $client->species ?? 'N/A' }}</td>
+                                            {{-- <td>{{ $client->species ?? 'N/A' }}</td> --}}
                                             <td>
                                                 {{ $client->date 
                                                     ? \Carbon\Carbon::parse($client->date)->format('F d, Y') 

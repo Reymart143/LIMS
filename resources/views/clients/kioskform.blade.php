@@ -123,7 +123,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6 position-relative mt-4 mb-2">
+                        {{-- <div class="col-md-6 position-relative mt-4 mb-2">
                             <label for="source_sample" class="form-label">Source Sample</label>
                             <input type="text" class="form-control" id="source_sample" required name="source_sample">
                             <div class="invalid-tooltip">
@@ -176,17 +176,23 @@
                             <div class="valid-tooltip">
                                 Looks good!
                             </div>
-                        </div>
+                        </div> --}}
 
                         <div class="col-md-6 position-relative mt-4">
-                            <label for="date" class="form-label">Date</label>
-                            <input type="date" class="form-control" id="date" name="date">
-                            
-                            <div class="valid-tooltip">
-                                Looks good!
-                            </div>
-                        </div>
+                                <label for="date" class="form-label">Date</label>
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    id="date"
+                                    name="date"
+                                    value="{{ date('Y-m-d') }}"
+                                >
 
+                                <div class="valid-tooltip">
+                                    Looks good!
+                                </div>
+                            </div>
+{{-- 
                         <div class="col-md-6 position-relative mt-4">
                             <label for="classification" class="form-label">Classification</label>
                             <input type="text" class="form-control" id="classification" required name="classification">
@@ -196,10 +202,10 @@
                             <div class="valid-tooltip">
                                 Looks good!
                             </div>
-                        </div>
+                        </div> --}}
 
                         <div class="col-12 mt-5">
-                             <a class="btn btn-secondary" type="submit" href="/clients">Cancel</a>
+                             <a class="btn btn-secondary" type="submit" href="/kiosk">Cancel</a>
                             <button class="btn btn-primary" type="submit">Submit</button>
                         </div>
                         

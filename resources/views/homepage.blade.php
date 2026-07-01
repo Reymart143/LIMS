@@ -26,7 +26,6 @@
       </div>
       @endif
 
-
       @if(session('error'))
       <div class="mb-3 alert alert-bottom alert-danger alert-dismissible fade show auto-dismiss"
          role="alert"

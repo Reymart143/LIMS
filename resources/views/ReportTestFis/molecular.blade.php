@@ -1,0 +1,437 @@
+{{-- resources/views/ReportTestFis/pcrdownload.blade.php --}}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+
+    <style>
+        @page {
+            margin: 24px 30px;
+        }
+
+        body {
+            font-family: "Times New Roman", serif;
+            font-size: 12px;
+            color: #000;
+        }
+
+        .header {
+            text-align: center;
+            line-height: 1.15;
+            position: relative;
+            min-height: 130px;
+        }
+
+        .logo-left {
+            position: absolute;
+            left: 35px;
+            top: 0;
+            width: 105px;
+            height: 80px;
+            object-fit: contain;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .report-title {
+            font-weight: bold;
+            font-size: 20px;
+            margin-top: 6px;
+        }
+
+        .report-no {
+            font-size: 15px;
+            margin-top: 2px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info td {
+            border-top: 1px solid #000;
+            padding: 3px 6px;
+            font-weight: bold;
+            vertical-align: top;
+        }
+
+        .result-table {
+            margin-top: 16px;
+            table-layout: fixed;
+        }
+
+        .result-table th,
+        .result-table td {
+            border: 1px solid #000;
+            padding: 4px 5px;
+            text-align: center;
+            vertical-align: middle;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .result-table td {
+            height: 22px;
+        }
+
+        .result-table th {
+            font-weight: bold;
+        }
+
+        .remarks {
+            margin-top: 4px;
+            line-height: 1.2;
+        }
+
+        .conditions {
+            margin-top: 18px;
+            line-height: 1.2;
+        }
+
+        .standard-table {
+            margin-top: 5px;
+        }
+
+        .standard-table th,
+        .standard-table td {
+            border: 1px solid #000;
+            padding: 5px 6px;
+            vertical-align: top;
+        }
+
+        .standard-table th {
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .signatories {
+            margin-top: 25px;
+        }
+
+        .signatories td {
+            width: 33.33%;
+            vertical-align: top;
+            padding: 0 8px;
+        }
+
+        .name {
+            font-weight: bold;
+            margin-top: 38px;
+        }
+
+        .footer-line {
+            border-top: 1px solid #000;
+            margin: 28px 35px 5px;
+        }
+
+        .footer {
+            font-size: 12px;
+            color: #777;
+            line-height: 1.15;
+        }
+
+        .footer ul {
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        .seal {
+            font-style: italic;
+            font-size: 12px;
+            color: #777;
+            width: 110px;
+        }
+
+        .bottom-code {
+            font-size: 12px;
+            color: #777;
+        }
+
+        .page {
+            text-align: right;
+            font-size: 14px;
+            letter-spacing: 3px;
+            color: #777;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+    </style>
+</head>
+
+<body>
+
+@php
+    use Carbon\Carbon;
+
+    $dateCollected = !empty($rla->date_collected)
+        ? Carbon::parse($rla->date_collected)->format('F d, Y')
+        : '';
+
+    $dateReceived = !empty($rla->date_received)
+        ? Carbon::parse($rla->date_received)->format('F d, Y')
+        : '';
+
+    $dateIssue = now()->format('F d, Y');
+
+    $samples = $samples ?? [];
+    $analysisRequested = $analysisRequested ?? [];
+
+    if (count($samples) < 1) {
+        $samples = [
+            [
+                'lab_code' => '',
+                'sample_code' => '',
+                'sample_type' => '',
+            ]
+        ];
+    }
+
+    $resultColumnCount = count($analysisRequested);
+
+    /*
+    |--------------------------------------------------------------------------
+    | OPTIONAL RESULT VALUES
+    | Kung naa kay results JSON sa pcr_worksheets table, automatic niya basahon.
+    |
+    | Example sa worksheet->results:
+    | {
+    |   "RFL12-26-001": {
+    |       "EMS/AHPND": "Negative",
+    |       "WSSV": "Positive"
+    |   }
+    | }
+    |--------------------------------------------------------------------------
+    */
+    $worksheetResults = [];
+
+    if (!empty($worksheet->results)) {
+        $decodedResults = json_decode($worksheet->results, true);
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decodedResults)) {
+            $worksheetResults = $decodedResults;
+        }
+    }
+
+    $getResultValue = function ($labCode, $analysisName) use ($worksheetResults) {
+        if (isset($worksheetResults[$labCode][$analysisName])) {
+            return $worksheetResults[$labCode][$analysisName];
+        }
+
+        return '';
+    };
+@endphp
+
+<div class="header">
+    <img src="{{ public_path('assets/images/bfarlogo.png') }}" class="logo-left">
+
+    <div>Republic of the Philippines</div>
+    <div>Department of Agriculture</div>
+    <div class="bold">BUREAU OF FISHERIES AND AQUATIC RESOURCES</div>
+    <div class="bold">REGIONAL FISHERIES LABORATORY XII</div>
+    <div>J. Catolico St., Lagao, General Santos City</div>
+    <div>Contact No: 09686421148 / Email Address: bfar12rfl@gmail.com</div>
+
+    <div class="report-title">REPORT OF TEST</div>
+    <div class="report-no">No.: {{ $reportNo ?? '' }}</div>
+</div>
+
+<table class="info">
+    <tr>
+        <td colspan="2">Customer: {{ $rla->company_name ?? '' }}</td>
+    </tr>
+
+    <tr>
+        <td colspan="2">Address of Customer: {{ $rla->address ?? '' }}</td>
+    </tr>
+
+    <tr>
+        <td colspan="2">Contact Number and/or Email Address: {{ $rla->contact_no ?? '' }}</td>
+    </tr>
+
+    <tr>
+        <td colspan="2">Source of Sample: {{ $rla->source_sample ?? '' }}</td>
+    </tr>
+
+    <tr>
+        <td style="width:58%;">Date Collected: {{ $dateCollected }}</td>
+        <td>Date of Test:</td>
+    </tr>
+
+    <tr>
+        <td>Date of Receipt: {{ $dateReceived }}</td>
+        <td>Date of Issue: {{ $dateIssue }}</td>
+    </tr>
+</table>
+
+<table class="result-table">
+    <thead>
+        <tr>
+            @if ($resultColumnCount > 0)
+                <th rowspan="2" style="width:100px;">LABORATORY<br>CODE(S)</th>
+                <th rowspan="2" style="width:80px;">SAMPLE<br>CODE(S)</th>
+                <th rowspan="2" style="width:130px;">SAMPLE TYPE</th>
+                <th colspan="{{ $resultColumnCount }}">RESULTS</th>
+            @else
+                <th style="width:100px;">LABORATORY<br>CODE(S)</th>
+                <th style="width:80px;">SAMPLE<br>CODE(S)</th>
+                <th style="width:130px;">SAMPLE TYPE</th>
+                <th>RESULTS</th>
+            @endif
+        </tr>
+
+        @if ($resultColumnCount > 0)
+            <tr>
+                @foreach ($analysisRequested as $requested)
+                    <th>{{ $requested }}</th>
+                @endforeach
+            </tr>
+        @endif
+    </thead>
+
+    <tbody>
+        @foreach ($samples as $sample)
+            <tr>
+                <td class="bold">{{ $sample['lab_code'] ?? '' }}</td>
+                <td>{{ $sample['sample_code'] ?? '' }}</td>
+                <td>{{ $sample['sample_type'] ?? '' }}</td>
+
+                @if ($resultColumnCount > 0)
+                    @foreach ($analysisRequested as $requested)
+                        <td>
+                            {{ $getResultValue($sample['lab_code'] ?? '', $requested) }}
+                        </td>
+                    @endforeach
+                @else
+                    <td></td>
+                @endif
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
+<div class="remarks">
+    <strong>REMARKS:</strong>
+    {{ $rla->remarks ?? 'Result is based on sample submitted.' }}<br>
+
+    <span style="margin-left:65px;">
+        The laboratory is not responsible for the sampling stage of the submitted sample.
+    </span><br>
+
+    <span style="margin-left:65px;">
+        No part of this report may be reproduced nor transmitted without the written permission of the Laboratory Manager.
+    </span><br>
+
+    <span style="margin-left:65px;">
+        This report shall not be used for advertisement.
+    </span>
+</div>
+
+<div class="conditions">
+    Environmental Conditions of the laboratory:<br>
+    Temperature: 23 ± 3 ºC
+    <span style="margin-left:80px;">Relative Humidity: 50 ± 15 %</span>
+</div>
+
+<table class="standard-table">
+    <thead>
+        <tr>
+            <th style="width:100px;">TEST</th>
+            <th style="width:170px;">METHOD</th>
+            <th style="width:130px;">Interpretation</th>
+            <th>Reference</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td>
+                Molecular<br>
+                Diagnosis<br>
+                PCR
+            </td>
+
+            <td>
+                IQ Plus™ AHPND/EMS<br>
+                Plasmid and Toxin 1 Kit<br>
+                with POCKIT SYSTEM<br><br>
+
+                IQ2000 WSSV and<br>
+                AHPND/EMS Detection &<br>
+                Prevention System
+            </td>
+
+            <td>
+                Negative / Positive
+            </td>
+
+            <td>
+                Lightner DV (ed.) (1996). A handbook of pathology and Diagnostic procedures
+                for diseases of penaeid shrimp. <em>World Aquaculture Soc. Baton Rouge
+                Section 3.11</em>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<table class="signatories">
+    <tr>
+        <td>
+            <strong>Analyzed by:</strong>
+            <div class="name">MCERRL M. MARU</div>
+            Analyst
+        </td>
+
+        <td>
+            <strong>Certified by:</strong>
+            <div class="name">MA. MAURICE A. BANQUILING</div>
+            Quality Assurance Manager
+        </td>
+
+        <td>
+            <strong>Approved by:</strong>
+            <div class="name">EUGENE GAY B. JAMORA</div>
+            Laboratory Manager
+        </td>
+    </tr>
+</table>
+
+<div class="footer-line"></div>
+<div class="footer-line" style="margin-top:4px;"></div>
+
+<table class="footer">
+    <tr>
+        <td class="seal">
+            Not valid without<br>
+            the official dry seal
+        </td>
+
+        <td>
+            <ul>
+                <li>The results of test have traceability to the national and/or international standards.</li>
+                <li>This Report of Test may not be reproduced other than full, except with the prior written approval of both the Bureau of Fisheries and Aquatic Resources and the issuing Regional Fisheries Laboratory.</li>
+                <li>Report of Test without seal and signature are not valid. A copy of this report of test will be kept at the issuing laboratory for five years. The results concern only the test items.</li>
+            </ul>
+        </td>
+    </tr>
+</table>
+
+<table style="margin-top:4px;">
+    <tr>
+        <td class="bottom-code">
+            Form No.: LF 08-01-07 Rev. No.:0 Effectivity Date: 13 August 2019
+        </td>
+
+        <td class="page">
+            Page 1 of 1
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

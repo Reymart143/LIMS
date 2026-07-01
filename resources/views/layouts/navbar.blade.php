@@ -37,12 +37,12 @@
                 
                   <div class="logo-main">
                     <div class="logo-normal" >
-                        <img src="../assets/images/bfarlogo.png" 
+                        <img src="{{url('assets/images/bfarlogo.png')}}" 
                             alt="BFAR Logo" 
                             class="img-fluid" style="width: 90px;margin-left:5mm">
                     </div>
                     <div class="logo-mini" >
-                        <img src="../assets/images/bfarlogo.png" 
+                        <img src="{{url('assets/images/bfarlogo.png')}}" 
                             alt="BFAR Logo" 
                             class="img-fluid" style="width: 90px;margin-left:5mm">
                     </div>
@@ -64,7 +64,7 @@
                 </svg>
                 </i>
             </div>
-            <div class="input-group search-input">
+            {{-- <div class="input-group search-input">
               <span class="input-group-text" id="search-input">
                 <svg class="icon-18" width="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="11.7669" cy="11.7666" r="8.98856" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></circle>
@@ -72,7 +72,7 @@
                 </svg>
               </span>
               <input type="search" class="form-control" placeholder="Search...">
-            </div>
+            </div> --}}
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon">
                   <span class="mt-2 navbar-toggler-bar bar1"></span>
@@ -166,12 +166,12 @@
                   </div>
               </div>
               <div class="iq-header-img">
-                  <img src="../assets/images/dashboard/top-header.png" alt="header" class="theme-color-default-img img-fluid w-100 h-100 animated-scaleX">
-                  <img src="../assets/images/dashboard/top-header1.png" alt="header" class="theme-color-purple-img img-fluid w-100 h-100 animated-scaleX">
-                  <img src="../assets/images/dashboard/top-header2.png" alt="header" class="theme-color-blue-img img-fluid w-100 h-100 animated-scaleX">
-                  <img src="../assets/images/dashboard/top-header3.png" alt="header" class="theme-color-green-img img-fluid w-100 h-100 animated-scaleX">
-                  <img src="../assets/images/dashboard/top-header4.png" alt="header" class="theme-color-yellow-img img-fluid w-100 h-100 animated-scaleX">
-                  <img src="../assets/images/dashboard/top-header5.png" alt="header" class="theme-color-pink-img img-fluid w-100 h-100 animated-scaleX">
+                  <img src="{{url('assets/images/dashboard/top-header.png')}}" alt="header" class="theme-color-default-img img-fluid w-100 h-100 animated-scaleX">
+                  <img src="{{url('assets/images/dashboard/top-header1.png')}}" alt="header" class="theme-color-purple-img img-fluid w-100 h-100 animated-scaleX">
+                  <img src="{{url('assets/images/dashboard/top-header2.png')}}" alt="header" class="theme-color-blue-img img-fluid w-100 h-100 animated-scaleX">
+                  <img src="{{url('assets/images/dashboard/top-header3.png')}}" alt="header" class="theme-color-green-img img-fluid w-100 h-100 animated-scaleX">
+                  <img src="{{url('assets/images/dashboard/top-header4.png')}}" alt="header" class="theme-color-yellow-img img-fluid w-100 h-100 animated-scaleX">
+                  <img src="{{url('assets/images/dashboard/top-header5.png')}}" alt="header" class="theme-color-pink-img img-fluid w-100 h-100 animated-scaleX">
               </div>
           </div>          <!-- Nav Header Component End -->
         <!--Nav End-->
