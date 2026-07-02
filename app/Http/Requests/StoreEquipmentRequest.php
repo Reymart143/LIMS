@@ -12,6 +12,33 @@ class StoreEquipmentRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'qty' => $this->normalizeIntegerInput($this->input('qty')),
+            'received_quantity' => $this->normalizeIntegerInput($this->input('received_quantity')),
+            'used_quantity' => $this->normalizeIntegerInput($this->input('used_quantity')),
+            'balance_quantity' => $this->normalizeIntegerInput($this->input('balance_quantity')),
+        ]);
+    }
+
+    private function normalizeIntegerInput(mixed $value): mixed
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        if (is_int($value)) {
+            return $value;
+        }
+
+        if (is_string($value) && preg_match('/^\d+$/', $value)) {
+            return (int) ltrim($value, '0');
+        }
+
+        return $value;
+    }
+
     public function rules(): array
     {
         return [

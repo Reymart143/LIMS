@@ -15,7 +15,6 @@
         flex-wrap: wrap;
         align-items: center;
         gap: 0.75rem;
-        margin-bottom: 1rem;
     }
     .toolbar-group {
         display: flex;
