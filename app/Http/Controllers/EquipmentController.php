@@ -73,7 +73,7 @@ class EquipmentController extends Controller
 
             $equipment = Equipment::create($validated);
 
-            return redirect()->route('equipments.index')->with('success', 'Equipment added successfully!');
+            return redirect()->route('equipments.index')->with('success', 'Record created successfully.');
         } catch (\Exception $e) {
             Log::error('Equipment creation failed: ' . $e->getMessage());
             return redirect()->back()
@@ -114,7 +114,7 @@ class EquipmentController extends Controller
 
             $equipment->update($validated);
 
-            return redirect()->route('equipments.index')->with('success', 'Equipment updated successfully!');
+            return redirect()->route('equipments.index')->with('success', 'Changes have been saved.');
         } catch (\Exception $e) {
             Log::error('Equipment update failed: ' . $e->getMessage());
             return redirect()->back()
@@ -128,7 +128,7 @@ class EquipmentController extends Controller
         $equipment = Equipment::findOrFail($id);
         $equipment->delete();
 
-        return redirect()->route('equipments.index')->with('success', 'Equipment deleted successfully!');
+        return redirect()->route('equipments.index')->with('success', 'Record deleted successfully.');
     }
 
     public function getEquipmentDetails($id)

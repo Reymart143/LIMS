@@ -71,6 +71,43 @@
     .equipment-table th[data-column="person_in_charge"] {
         min-width: 150px;
     }
+    .equipment-table-shell {
+        position: relative;
+    }
+    .equipment-row-actions-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 20;
+    }
+    .equipment-row-actions-panel {
+        position: absolute;
+        left: 0;
+        right: auto;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.45rem;
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(219, 226, 234, 0.95);
+        border-radius: 0.6rem;
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-50%) translateX(8px);
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+        pointer-events: auto;
+    }
+    .equipment-row-actions-panel.is-visible {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(-50%) translateX(0);
+    }
+    .equipment-row-actions-panel .row-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
     .field-chip {
         display: inline-flex;
         align-items: center;
@@ -217,12 +254,16 @@
         width: 100% !important;
         box-sizing: border-box;
     }
+    .swal2-popup.equipment-swal {
+        border-radius: 1rem;
+        font-family: inherit;
+    }
 </style>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 @php
     $visibleColumnKeys = collect($equipmentTableColumns)->filter(fn ($column) => !empty($column['default_visible']))->pluck('key')->values()->all();
 @endphp
-<div class="conatiner-fluid content-inner mt-n5 py-0" id="equipmentPage" data-default-columns='@json($visibleColumnKeys)' data-export-url="{{ route('equipments.export') }}">
+<div class="conatiner-fluid content-inner mt-n5 py-0" id="equipmentPage" data-default-columns='@json($visibleColumnKeys)' data-export-url="{{ route('equipments.export') }}" data-error-modal="{{ old('form_type', '') }}" data-success-message="{{ session('success') }}">
     <div class="row">
         <div class="col-sm-12">
             <div class="card">
@@ -351,7 +392,7 @@
                         </div>
                     </div>
 
-                    <div class="table-responsive mt-3 table-shell">
+                    <div class="table-responsive mt-3 table-shell equipment-table-shell" id="equipmentTableShell">
                         <table class="table table-striped mb-0 equipment-table" role="grid" data-bs-toggle="data-table" id="equipmentTable">
                             <thead>
                                 <tr class="light">
@@ -362,7 +403,36 @@
                             </thead>
                             <tbody>
                                 @forelse($equipments as $equipment)
-                                <tr>
+                                @php
+                                    $personInChargeValue = $equipment->person_in_charge;
+                                    if (is_string($personInChargeValue)) {
+                                        $personInChargeValue = json_decode($personInChargeValue, true);
+                                    }
+                                    $personInChargeValue = is_array($personInChargeValue) ? $personInChargeValue : [];
+                                @endphp
+                                <tr
+                                    class="equipment-row"
+                                    data-update-url="{{ route('equipments.update', $equipment->id) }}"
+                                    data-delete-url="{{ route('equipments.destroy', $equipment->id) }}"
+                                    data-equipment-id="{{ $equipment->id }}"
+                                    data-equipment="{{ $equipment->equipment }}"
+                                    data-equipment-no="{{ $equipment->equipment_no ?? '' }}"
+                                    data-qty="{{ $equipment->qty ?? 0 }}"
+                                    data-unit="{{ $equipment->unit ?? '' }}"
+                                    data-rfl-control-no="{{ $equipment->rfl_control_no ?? '' }}"
+                                    data-description="{{ e($equipment->description ?? '') }}"
+                                    data-brand-model="{{ $equipment->brand_model ?? '' }}"
+                                    data-date-acquired="{{ $equipment->date_acquired ? \Carbon\Carbon::parse($equipment->date_acquired)->format('Y-m-d') : '' }}"
+                                    data-unit-cost="{{ $equipment->unit_cost ?? 0 }}"
+                                    data-total-cost="{{ $equipment->total_cost ?? 0 }}"
+                                    data-status-remarks="{{ e($equipment->status_remarks ?? '') }}"
+                                    data-received-quantity="{{ $equipment->received_quantity ?? 0 }}"
+                                    data-used-quantity="{{ $equipment->used_quantity ?? 0 }}"
+                                    data-balance-quantity="{{ $equipment->balance_quantity ?? 0 }}"
+                                    data-location="{{ e($equipment->location ?? '') }}"
+                                    data-person-in-charge='@json($personInChargeValue)'
+                                    data-updates='@json($equipment->updates ?? "")'
+                                >
                                     <td data-column="equipment">{{ $equipment->equipment }}</td>
                                     <td data-column="equipment_no">{{ $equipment->equipment_no ?? 'N/A' }}</td>
                                     <td data-column="qty">{{ $equipment->qty ?? 0 }}</td>
@@ -413,6 +483,16 @@
                                 @endforelse
                             </tbody>
                         </table>
+                        <div class="equipment-row-actions-overlay" id="equipmentRowActionsOverlay" aria-hidden="true">
+                            <div class="equipment-row-actions-panel" id="equipmentRowActionsPanel">
+                                <button type="button" class="btn btn-sm btn-primary" id="equipmentRowEditButton">Edit</button>
+                                <form id="equipmentRowDeleteForm" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="card-body py-2">
@@ -601,6 +681,182 @@
     </div>
 </div>
 
+<!-- Edit Equipment Modal -->
+<div class="modal fade" id="editEquipmentModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="editEquipmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered equipment-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editEquipmentModalLabel">Update Equipment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if($errors->any())
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Please correct the following errors:</strong>
+                        <ul class="mb-0 mt-2">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                @if(session('error'))
+                    <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+                @endif
+                <form id="editEquipmentForm" data-has-errors="{{ $errors->any() ? '1' : '0' }}" class="equipment-form-grid needs-validation" action="{{ route('equipments.update', old('equipment_id', 0)) }}" method="POST" novalidate>
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="form_type" value="edit">
+                    <input type="hidden" name="equipment_id" id="edit_equipment_id" value="{{ old('equipment_id') }}">
+                    <div class="compact-panel">
+                        <div class="section-title">Source & Identification</div>
+                        <div class="section-grid">
+                            <div>
+                                <label for="edit_equipment" class="form-label">Equipment *</label>
+                                <select class="form-select @error('equipment') is-invalid @enderror" id="edit_equipment" name="equipment" required>
+                                    <option value="">Select Equipment</option>
+                                    @foreach($equipmentDropdown as $item)
+                                        <option value="{{ $item->equipment }}" data-id="{{ $item->id }}" data-equipment-no="{{ $item->equipment_no }}" data-brand-model="{{ $item->model }}" data-location="{{ $item->location }}" data-year="{{ $item->year }}" data-date="{{ $item->date }}" {{ old('equipment') === $item->equipment ? 'selected' : '' }}>
+                                            {{ $item->equipment }}{{ $item->model ? ' (' . $item->model . ')' : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="field-help">Pick the inventory source record. This drives the system-generated fields below.</div>
+                                @error('equipment')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label for="edit_equipment_no" class="form-label">Equipment No. <span class="field-chip">Auto-generated</span></label>
+                                <input type="text" class="form-control readonly-field @error('equipment_no') is-invalid @enderror" id="edit_equipment_no" name="equipment_no" value="{{ old('equipment_no') }}" readonly required data-bs-toggle="tooltip" title="Filled automatically from the selected source record.">
+                                @error('equipment_no')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="compact-panel">
+                        <div class="section-title">Quantity & Cost</div>
+                        <div class="section-grid-3">
+                            <div>
+                                <label for="edit_qty" class="form-label">Qty *</label>
+                                <input type="number" class="form-control @error('qty') is-invalid @enderror" id="edit_qty" name="qty" min="0" value="{{ old('qty') }}" required>
+                                @error('qty')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label for="edit_unit_cost" class="form-label">Unit Cost * <span class="field-chip">Editable</span></label>
+                                <input type="number" step="0.01" min="0" class="form-control @error('unit_cost') is-invalid @enderror" id="edit_unit_cost" name="unit_cost" value="{{ old('unit_cost') }}" required>
+                                @error('unit_cost')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label for="edit_total_cost" class="form-label">Total Cost <span class="field-chip">Auto</span></label>
+                                <input type="number" step="0.01" min="0" class="form-control readonly-field @error('total_cost') is-invalid @enderror" id="edit_total_cost" name="total_cost" value="{{ old('total_cost') }}" readonly data-bs-toggle="tooltip" title="Calculated automatically from Qty x Unit Cost.">
+                                @error('total_cost')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label for="edit_received_quantity" class="form-label">Received Quantity *</label>
+                                <input type="number" class="form-control @error('received_quantity') is-invalid @enderror" id="edit_received_quantity" name="received_quantity" min="0" value="{{ old('received_quantity') }}" required>
+                                @error('received_quantity')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label for="edit_used_quantity" class="form-label">Used Quantity *</label>
+                                <input type="number" class="form-control @error('used_quantity') is-invalid @enderror" id="edit_used_quantity" name="used_quantity" min="0" value="{{ old('used_quantity') }}" required>
+                                @error('used_quantity')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label for="edit_balance_quantity" class="form-label">Balance Quantity <span class="field-chip">Auto</span></label>
+                                <input type="number" class="form-control readonly-field @error('balance_quantity') is-invalid @enderror" id="edit_balance_quantity" name="balance_quantity" value="{{ old('balance_quantity') }}" readonly data-bs-toggle="tooltip" title="Calculated automatically from Received Quantity - Used Quantity.">
+                                @error('balance_quantity')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="compact-panel">
+                        <div class="section-title">Details & Assignment</div>
+                        <div class="section-grid">
+                            <div>
+                                <label for="edit_unit" class="form-label">Unit</label>
+                                <input type="text" class="form-control @error('unit') is-invalid @enderror" id="edit_unit" name="unit" value="{{ old('unit') }}" maxlength="255">
+                                @error('unit')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label for="edit_brand_model" class="form-label">Brand / Model <span class="field-chip">System-generated</span></label>
+                                <input type="text" class="form-control readonly-field @error('brand_model') is-invalid @enderror" id="edit_brand_model" name="brand_model" value="{{ old('brand_model') }}" readonly maxlength="255" data-bs-toggle="tooltip" title="Filled automatically from the selected source record.">
+                                @error('brand_model')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label for="edit_date_acquired" class="form-label">Date Acquired</label>
+                                <input type="date" class="form-control @error('date_acquired') is-invalid @enderror" id="edit_date_acquired" name="date_acquired" value="{{ old('date_acquired') }}">
+                                @error('date_acquired')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label for="edit_location" class="form-label">Location <span class="field-chip">System-generated</span></label>
+                                <input type="text" class="form-control readonly-field @error('location') is-invalid @enderror" id="edit_location" name="location" value="{{ old('location') }}" readonly maxlength="255" data-bs-toggle="tooltip" title="Filled automatically from the selected source record.">
+                                @error('location')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <label for="edit_person_in_charge" class="form-label">Person In-Charge</label>
+                            @php
+                                $editSelectedPersonInCharge = old('person_in_charge', []);
+                                if (is_string($editSelectedPersonInCharge)) {
+                                    $editSelectedPersonInCharge = json_decode($editSelectedPersonInCharge, true);
+                                }
+                                $editSelectedPersonInCharge = is_array($editSelectedPersonInCharge) ? $editSelectedPersonInCharge : [];
+                            @endphp
+                            <select class="form-select @error('person_in_charge') is-invalid @enderror @error('person_in_charge.*') is-invalid @enderror" id="edit_person_in_charge" name="person_in_charge[]" multiple>
+                                @foreach($users as $user)
+                                    @php
+                                        $initials = strtoupper(
+                                            ($user->f_name ? substr($user->f_name, 0, 1) : '') .
+                                            ($user->m_name ? substr($user->m_name, 0, 1) : '') .
+                                            ($user->l_name ? substr($user->l_name, 0, 1) : '')
+                                        );
+                                    @endphp
+                                    <option value="{{ $user->id }}" {{ in_array($user->id, $editSelectedPersonInCharge) ? 'selected' : '' }}>{{ $initials }}</option>
+                                @endforeach
+                            </select>
+                            @error('person_in_charge')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            @error('person_in_charge.*')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+
+                    <div class="compact-panel">
+                        <div class="section-title">Remarks & Notes</div>
+                        <div class="section-grid">
+                            <div>
+                                <label for="edit_rfl_control_no" class="form-label">RFL Control No.</label>
+                                <input type="text" class="form-control @error('rfl_control_no') is-invalid @enderror" id="edit_rfl_control_no" name="rfl_control_no" value="{{ old('rfl_control_no') }}" maxlength="255">
+                                @error('rfl_control_no')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label for="edit_status_remarks" class="form-label">Status / Remarks</label>
+                                <textarea class="form-control @error('status_remarks') is-invalid @enderror" id="edit_status_remarks" name="status_remarks" rows="2" maxlength="5000">{{ old('status_remarks') }}</textarea>
+                                @error('status_remarks')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <label for="edit_description" class="form-label">Description</label>
+                            <textarea class="form-control @error('description') is-invalid @enderror" id="edit_description" name="description" rows="1" maxlength="5000">{{ old('description') }}</textarea>
+                            @error('description')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="mt-2">
+                            <label for="edit_updates" class="form-label">Updates</label>
+                            <textarea class="form-control @error('updates') is-invalid @enderror" id="edit_updates" name="updates" rows="1" maxlength="10000">{{ old('updates') }}</textarea>
+                            @error('updates')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+
+                    <div class="actions-row">
+                        <button class="btn btn-success" id="editSaveEquipmentBtn" type="submit">
+                            <span class="save-label">Update Equipment</span>
+                            <span class="save-spinner spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="loading-overlay" id="globalLoadingOverlay" aria-hidden="true">
     <div class="loading-card">
         <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
@@ -614,99 +870,246 @@
 <script>
 (function() {
     'use strict';
-    
-    // Auto-fill equipment details
-    const equipmentSelect = document.getElementById('equipment');
-    const equipmentNoInput = document.getElementById('equipment_no');
-    const brandModelInput = document.getElementById('brand_model');
-    const dateAcquiredInput = document.getElementById('date_acquired');
-    const locationInput = document.getElementById('location');
-    
-    equipmentSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        if (selectedOption.value) {
-            equipmentNoInput.value = selectedOption.dataset.equipmentNo || '';
-            brandModelInput.value = selectedOption.dataset.brandModel || '';
-            // Parse date from format: YYYY-MM-DD HH:MM:SS or just YYYY-MM-DD
-            if (selectedOption.dataset.date) {
-                const datePart = selectedOption.dataset.date.split(' ')[0];
-                dateAcquiredInput.value = datePart;
-            } else {
-                dateAcquiredInput.value = '';
-            }
-            locationInput.value = selectedOption.dataset.location || '';
-        } else {
-            equipmentNoInput.value = '';
-            brandModelInput.value = '';
-            dateAcquiredInput.value = '';
-            locationInput.value = '';
-        }
-    });
-
-    if (equipmentSelect.value) {
-        equipmentSelect.dispatchEvent(new Event('change'));
-    }
-    
-    // Auto calculate Total Cost = Unit Cost × Qty
-    const qtyInput = document.getElementById('qty');
-    const unitCostInput = document.getElementById('unit_cost');
-    const totalCostInput = document.getElementById('total_cost');
-    
-    function calculateTotalCost() {
-        const qty = parseFloat(qtyInput.value) || 0;
-        const unitCost = parseFloat(unitCostInput.value) || 0;
-        totalCostInput.value = (qty * unitCost).toFixed(2);
-    }
-    
-    qtyInput.addEventListener('input', calculateTotalCost);
-    unitCostInput.addEventListener('input', calculateTotalCost);
-    
-    // Auto calculate Balance Quantity = Received - Used
-    const receivedQtyInput = document.getElementById('received_quantity');
-    const usedQtyInput = document.getElementById('used_quantity');
-    const balanceQtyInput = document.getElementById('balance_quantity');
-    
-    function calculateBalance() {
-        const received = parseInt(receivedQtyInput.value) || 0;
-        const used = parseInt(usedQtyInput.value) || 0;
-        balanceQtyInput.value = Math.max(0, received - used);
-    }
-    
-    receivedQtyInput.addEventListener('input', calculateBalance);
-    usedQtyInput.addEventListener('input', calculateBalance);
-
-    calculateTotalCost();
-    calculateBalance();
-    
-    // Initialize Choices.js for multi-select
-    const personInChargeSelect = document.getElementById('person_in_charge');
-    if (personInChargeSelect) {
-        new Choices(personInChargeSelect, {
-            removeItemButton: true,
-            searchEnabled: true,
-            placeholder: true,
-            placeholderValue: 'Select persons in-charge',
-        });
-    }
-    
-    // Enable searchable dropdown for Equipment
-    const equipmentDropdownSelect = document.getElementById('equipment');
-    if (equipmentDropdownSelect) {
-        new Choices(equipmentDropdownSelect, {
-            removeItemButton: false,
-            searchEnabled: true,
-            placeholder: true,
-            placeholderValue: 'Search equipment...',
-        });
-    }
-    
-    const equipmentTable = document.getElementById('equipmentTable');
-    const columnSelector = document.getElementById('columnSelector');
-    const columnToggles = Array.from(document.querySelectorAll('.column-toggle'));
-    const storageKey = 'equipment.visibleColumns';
     const pageRoot = document.getElementById('equipmentPage');
     const defaultColumns = JSON.parse(pageRoot?.dataset.defaultColumns || '[]');
     const exportBaseUrl = pageRoot?.dataset.exportUrl || '';
+    const errorModalType = pageRoot?.dataset.errorModal || '';
+
+    const storageKey = 'equipment.visibleColumns';
+    const columnToggles = Array.from(document.querySelectorAll('.column-toggle'));
+
+    const addForm = document.getElementById('equipmentForm');
+    const addModalElement = document.getElementById('addEquipmentModal');
+    const addSaveButton = document.getElementById('saveEquipmentBtn');
+    const addSaveLabel = addSaveButton?.querySelector('.save-label');
+    const addSaveSpinner = addSaveButton?.querySelector('.save-spinner');
+
+    const editForm = document.getElementById('editEquipmentForm');
+    const editModalElement = document.getElementById('editEquipmentModal');
+    const editSaveButton = document.getElementById('editSaveEquipmentBtn');
+    const editSaveLabel = editSaveButton?.querySelector('.save-label');
+    const editSaveSpinner = editSaveButton?.querySelector('.save-spinner');
+    const rowActionsOverlay = document.getElementById('equipmentRowActionsOverlay');
+    const rowActionsPanel = document.getElementById('equipmentRowActionsPanel');
+    const rowActionsEditButton = document.getElementById('equipmentRowEditButton');
+    const rowActionsDeleteForm = document.getElementById('equipmentRowDeleteForm');
+    const tableShell = document.getElementById('equipmentTableShell');
+
+    const equipmentTable = document.getElementById('equipmentTable');
+
+    let addPersonInChargeChoices = null;
+    let addEquipmentChoices = null;
+    let editPersonInChargeChoices = null;
+    let editEquipmentChoices = null;
+    let activeEquipmentRow = null;
+    let hideRowActionsTimer = null;
+
+    function safeParseJson(value, fallback) {
+        if (value === null || value === undefined || value === '') {
+            return fallback;
+        }
+
+        try {
+            const parsed = JSON.parse(value);
+            return parsed === null ? fallback : parsed;
+        } catch (error) {
+            return fallback;
+        }
+    }
+
+    function showSweetAlert(type, title, text) {
+        if (typeof Swal === 'undefined') {
+            return;
+        }
+
+        Swal.fire({
+            icon: type,
+            title: title,
+            text: text,
+            confirmButtonText: 'OK',
+            buttonsStyling: false,
+            customClass: {
+                popup: 'equipment-swal',
+                confirmButton: 'btn btn-primary px-4'
+            }
+        });
+    }
+
+    function normalizeIntegerValue(value) {
+        const text = String(value ?? '').trim();
+
+        if (!text) {
+            return '';
+        }
+
+        if (!/^\d+$/.test(text)) {
+            return value;
+        }
+
+        return String(parseInt(text, 10));
+    }
+
+    function normalizeFormIntegers(form, fieldNames) {
+        fieldNames.forEach(function(fieldName) {
+            const input = form?.querySelector(`[name="${fieldName}"]`);
+            if (input && input.value !== '') {
+                input.value = normalizeIntegerValue(input.value);
+            }
+        });
+    }
+
+    function focusFirstInvalid(container) {
+        const firstInvalid = container?.querySelector('.is-invalid, .form-control:invalid, .form-select:invalid');
+        if (firstInvalid) {
+            firstInvalid.focus();
+        }
+    }
+
+    function wireFormValidation(form, modalElement, saveButton, saveLabel, saveSpinner, integerFieldNames) {
+        if (!form) {
+            return;
+        }
+
+        form.addEventListener('submit', function(event) {
+            normalizeFormIntegers(form, integerFieldNames);
+
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                focusFirstInvalid(form);
+                return;
+            }
+
+            if (saveButton) {
+                saveButton.disabled = true;
+                if (saveLabel) {
+                    saveLabel.textContent = 'Saving...';
+                }
+                if (saveSpinner) {
+                    saveSpinner.classList.remove('d-none');
+                }
+            }
+
+            form.classList.add('was-validated');
+        });
+
+        form.querySelectorAll('input, textarea, select').forEach(function(field) {
+            field.addEventListener('input', function() {
+                if (field.checkValidity()) {
+                    field.classList.remove('is-invalid');
+                }
+            });
+        });
+
+        form.querySelectorAll(`[name="${integerFieldNames.join('"], [name="')}"]`).forEach(function(field) {
+            field.addEventListener('blur', function() {
+                if (field.value !== '') {
+                    field.value = normalizeIntegerValue(field.value);
+                }
+            });
+        });
+
+        if (modalElement) {
+            modalElement.addEventListener('shown.bs.modal', function() {
+                focusFirstInvalid(modalElement);
+            }, { once: false });
+        }
+    }
+
+    function bindSelectAutoFill(selectElement, equipmentNoInput, brandModelInput, dateAcquiredInput, locationInput) {
+        if (!selectElement) {
+            return;
+        }
+
+        selectElement.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption && selectedOption.value) {
+                equipmentNoInput.value = selectedOption.dataset.equipmentNo || '';
+                brandModelInput.value = selectedOption.dataset.brandModel || '';
+                if (selectedOption.dataset.date) {
+                    const datePart = selectedOption.dataset.date.split(' ')[0];
+                    dateAcquiredInput.value = datePart;
+                } else {
+                    dateAcquiredInput.value = '';
+                }
+                locationInput.value = selectedOption.dataset.location || '';
+            } else {
+                equipmentNoInput.value = '';
+                brandModelInput.value = '';
+                dateAcquiredInput.value = '';
+                locationInput.value = '';
+            }
+        });
+    }
+
+    function bindCalculation(qtyInput, unitCostInput, totalCostInput) {
+        if (!qtyInput || !unitCostInput || !totalCostInput) {
+            return;
+        }
+
+        function calculateTotalCost() {
+            const qty = parseFloat(qtyInput.value) || 0;
+            const unitCost = parseFloat(unitCostInput.value) || 0;
+            totalCostInput.value = (qty * unitCost).toFixed(2);
+        }
+
+        qtyInput.addEventListener('input', calculateTotalCost);
+        unitCostInput.addEventListener('input', calculateTotalCost);
+        calculateTotalCost();
+    }
+
+    function bindBalanceCalculation(receivedQtyInput, usedQtyInput, balanceQtyInput) {
+        if (!receivedQtyInput || !usedQtyInput || !balanceQtyInput) {
+            return;
+        }
+
+        function calculateBalance() {
+            const received = parseInt(receivedQtyInput.value, 10) || 0;
+            const used = parseInt(usedQtyInput.value, 10) || 0;
+            balanceQtyInput.value = Math.max(0, received - used);
+        }
+
+        receivedQtyInput.addEventListener('input', calculateBalance);
+        usedQtyInput.addEventListener('input', calculateBalance);
+        calculateBalance();
+    }
+
+    function bindChoices(selectElement, config) {
+        if (!selectElement) {
+            return null;
+        }
+
+        return new Choices(selectElement, config);
+    }
+
+    function setChoicesSelection(choicesInstance, selectElement, value) {
+        if (!selectElement) {
+            return;
+        }
+
+        if (choicesInstance && typeof choicesInstance.removeActiveItems === 'function') {
+            choicesInstance.removeActiveItems();
+
+            if (Array.isArray(value)) {
+                value.forEach(function(item) {
+                    choicesInstance.setChoiceByValue(String(item));
+                });
+            } else if (value !== null && value !== undefined && value !== '') {
+                choicesInstance.setChoiceByValue(String(value));
+            }
+            return;
+        }
+
+        if (Array.isArray(value)) {
+            Array.from(selectElement.options).forEach(function(option) {
+                option.selected = value.map(String).includes(String(option.value));
+            });
+        } else {
+            selectElement.value = value ?? '';
+        }
+
+        selectElement.dispatchEvent(new Event('change', { bubbles: true }));
+    }
 
     function getStoredColumns() {
         try {
@@ -742,6 +1145,56 @@
     function currentVisibleColumns() {
         return columnToggles.filter(function(toggle) { return toggle.checked; }).map(function(toggle) { return toggle.value; });
     }
+
+    bindSelectAutoFill(
+        document.getElementById('equipment'),
+        document.getElementById('equipment_no'),
+        document.getElementById('brand_model'),
+        document.getElementById('date_acquired'),
+        document.getElementById('location')
+    );
+
+    bindSelectAutoFill(
+        document.getElementById('edit_equipment'),
+        document.getElementById('edit_equipment_no'),
+        document.getElementById('edit_brand_model'),
+        document.getElementById('edit_date_acquired'),
+        document.getElementById('edit_location')
+    );
+
+    bindCalculation(document.getElementById('qty'), document.getElementById('unit_cost'), document.getElementById('total_cost'));
+    bindCalculation(document.getElementById('edit_qty'), document.getElementById('edit_unit_cost'), document.getElementById('edit_total_cost'));
+
+    bindBalanceCalculation(document.getElementById('received_quantity'), document.getElementById('used_quantity'), document.getElementById('balance_quantity'));
+    bindBalanceCalculation(document.getElementById('edit_received_quantity'), document.getElementById('edit_used_quantity'), document.getElementById('edit_balance_quantity'));
+
+    addPersonInChargeChoices = bindChoices(document.getElementById('person_in_charge'), {
+        removeItemButton: true,
+        searchEnabled: true,
+        placeholder: true,
+        placeholderValue: 'Select persons in-charge',
+    });
+
+    editPersonInChargeChoices = bindChoices(document.getElementById('edit_person_in_charge'), {
+        removeItemButton: true,
+        searchEnabled: true,
+        placeholder: true,
+        placeholderValue: 'Select persons in-charge',
+    });
+
+    addEquipmentChoices = bindChoices(document.getElementById('equipment'), {
+        removeItemButton: false,
+        searchEnabled: true,
+        placeholder: true,
+        placeholderValue: 'Search equipment...',
+    });
+
+    editEquipmentChoices = bindChoices(document.getElementById('edit_equipment'), {
+        removeItemButton: false,
+        searchEnabled: true,
+        placeholder: true,
+        placeholderValue: 'Search equipment...',
+    });
 
     const initialColumns = getStoredColumns();
     syncColumnToggles(initialColumns);
@@ -787,58 +1240,206 @@
         });
     });
 
-    // Form validation
-    const form = document.getElementById('equipmentForm');
-    const equipmentModalElement = document.getElementById('addEquipmentModal');
-    const hasValidationErrors = form.dataset.hasErrors === '1';
-    const saveButton = document.getElementById('saveEquipmentBtn');
-    const saveLabel = saveButton?.querySelector('.save-label');
-    const saveSpinner = saveButton?.querySelector('.save-spinner');
-
-    form.addEventListener('submit', function(e) {
-        if (!form.checkValidity()) {
-            e.preventDefault();
-            e.stopPropagation();
-            const firstInvalid = form.querySelector('.is-invalid, :invalid');
-            if (firstInvalid) {
-                firstInvalid.focus();
-            }
+    function populateEditModal(button) {
+        if (!editForm || !button) {
             return;
         }
-        if (saveButton) {
-            saveButton.disabled = true;
-            if (saveLabel) {
-                saveLabel.textContent = 'Saving...';
-            }
-            if (saveSpinner) {
-                saveSpinner.classList.remove('d-none');
-            }
-        }
-        form.classList.add('was-validated');
-    });
 
-    form.querySelectorAll('input, textarea, select').forEach(function(field) {
-        field.addEventListener('input', function() {
-            if (field.checkValidity()) {
-                field.classList.remove('is-invalid');
+        const savedDateAcquired = button.dataset.dateAcquired || '';
+        editForm.action = button.dataset.updateUrl || editForm.action;
+        document.getElementById('edit_equipment_id').value = button.dataset.equipmentId || '';
+
+        setChoicesSelection(editEquipmentChoices, document.getElementById('edit_equipment'), button.dataset.equipment || '');
+        document.getElementById('edit_equipment_no').value = button.dataset.equipmentNo || '';
+        document.getElementById('edit_qty').value = button.dataset.qty || 0;
+        document.getElementById('edit_unit').value = button.dataset.unit || '';
+        document.getElementById('edit_rfl_control_no').value = button.dataset.rflControlNo || '';
+        document.getElementById('edit_description').value = button.dataset.description || '';
+        document.getElementById('edit_brand_model').value = button.dataset.brandModel || '';
+        document.getElementById('edit_date_acquired').value = savedDateAcquired;
+        document.getElementById('edit_unit_cost').value = button.dataset.unitCost || 0;
+        document.getElementById('edit_total_cost').value = button.dataset.totalCost || 0;
+        document.getElementById('edit_status_remarks').value = button.dataset.statusRemarks || '';
+        document.getElementById('edit_received_quantity').value = button.dataset.receivedQuantity || 0;
+        document.getElementById('edit_used_quantity').value = button.dataset.usedQuantity || 0;
+        document.getElementById('edit_balance_quantity').value = button.dataset.balanceQuantity || 0;
+        document.getElementById('edit_location').value = button.dataset.location || '';
+        document.getElementById('edit_updates').value = safeParseJson(button.dataset.updates, '');
+
+        const personIds = safeParseJson(button.dataset.personInCharge, []);
+        setChoicesSelection(editPersonInChargeChoices, document.getElementById('edit_person_in_charge'), personIds);
+
+        document.getElementById('edit_equipment').dispatchEvent(new Event('change', { bubbles: true }));
+        document.getElementById('edit_date_acquired').value = savedDateAcquired;
+        document.getElementById('edit_qty').dispatchEvent(new Event('input', { bubbles: true }));
+        document.getElementById('edit_received_quantity').dispatchEvent(new Event('input', { bubbles: true }));
+        document.getElementById('edit_used_quantity').dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function populateEditModalFromRow(row) {
+        if (!row) {
+            return;
+        }
+
+        populateEditModal({
+            dataset: row.dataset,
+        });
+    }
+
+    function showRowActions(row) {
+        if (!rowActionsOverlay || !rowActionsPanel || !row) {
+            return;
+        }
+
+        activeEquipmentRow = row;
+        clearTimeout(hideRowActionsTimer);
+
+        const shellRect = tableShell.getBoundingClientRect();
+        const rowRect = row.getBoundingClientRect();
+
+        rowActionsOverlay.setAttribute('aria-hidden', 'false');
+        rowActionsPanel.classList.add('is-visible');
+        rowActionsPanel.style.top = `${rowRect.top - shellRect.top + tableShell.scrollTop + (row.offsetHeight / 2)}px`;
+
+        window.requestAnimationFrame(function() {
+            const panelWidth = rowActionsPanel.offsetWidth;
+            rowActionsPanel.style.left = `${tableShell.scrollLeft + tableShell.clientWidth - panelWidth - 12}px`;
+        });
+
+        rowActionsDeleteForm.action = row.dataset.deleteUrl || rowActionsDeleteForm.action;
+        rowActionsEditButton.onclick = function() {
+            populateEditModalFromRow(row);
+            bootstrap.Modal.getOrCreateInstance(editModalElement).show();
+        };
+    }
+
+    function hideRowActions() {
+        if (!rowActionsOverlay || !rowActionsPanel) {
+            return;
+        }
+
+        activeEquipmentRow = null;
+        rowActionsPanel.classList.remove('is-visible');
+        rowActionsOverlay.setAttribute('aria-hidden', 'true');
+    }
+
+    rowActionsDeleteForm?.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        if (typeof Swal === 'undefined') {
+            rowActionsDeleteForm.submit();
+            return;
+        }
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'Delete this record?',
+            text: 'This action cannot be undone.',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true,
+            buttonsStyling: false,
+            customClass: {
+                popup: 'equipment-swal',
+                confirmButton: 'btn btn-danger px-4 mx-1',
+                cancelButton: 'btn btn-outline-secondary px-4 mx-1'
+            }
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                rowActionsDeleteForm.submit();
             }
         });
     });
 
-    if (hasValidationErrors && equipmentModalElement) {
-        const modal = new bootstrap.Modal(equipmentModalElement);
-        equipmentModalElement.addEventListener('shown.bs.modal', function () {
-            const firstInvalid = equipmentModalElement.querySelector('.is-invalid, .form-control:invalid, .form-select:invalid');
-            if (firstInvalid) {
-                firstInvalid.focus();
+    document.querySelectorAll('.equipment-row').forEach(function(row) {
+        row.addEventListener('mouseenter', function() {
+            showRowActions(row);
+        });
+
+        row.addEventListener('mousemove', function() {
+            if (activeEquipmentRow === row) {
+                showRowActions(row);
             }
-        }, { once: true });
+        });
+
+        row.addEventListener('mouseleave', function() {
+            clearTimeout(hideRowActionsTimer);
+            hideRowActionsTimer = setTimeout(function() {
+                if (!rowActionsPanel?.matches(':hover')) {
+                    hideRowActions();
+                }
+            }, 90);
+        });
+
+        row.addEventListener('focusin', function() {
+            showRowActions(row);
+        });
+    });
+
+    rowActionsPanel?.addEventListener('mouseenter', function() {
+        clearTimeout(hideRowActionsTimer);
+    });
+
+    rowActionsPanel?.addEventListener('mouseleave', function() {
+        hideRowActionsTimer = setTimeout(function() {
+            if (!activeEquipmentRow) {
+                hideRowActions();
+            }
+        }, 90);
+    });
+
+    tableShell?.addEventListener('scroll', function() {
+        if (activeEquipmentRow) {
+            showRowActions(activeEquipmentRow);
+        }
+    });
+
+    window.addEventListener('resize', function() {
+        if (activeEquipmentRow) {
+            showRowActions(activeEquipmentRow);
+        }
+    });
+
+    wireFormValidation(addForm, addModalElement, addSaveButton, addSaveLabel, addSaveSpinner, ['qty', 'received_quantity', 'used_quantity', 'balance_quantity']);
+    wireFormValidation(editForm, editModalElement, editSaveButton, editSaveLabel, editSaveSpinner, ['qty', 'received_quantity', 'used_quantity', 'balance_quantity']);
+
+    if (addForm && document.getElementById('equipment')?.value) {
+        document.getElementById('equipment').dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    if (editForm && document.getElementById('edit_equipment')?.value) {
+        document.getElementById('edit_equipment').dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    if (addForm && addForm.dataset.hasErrors === '1' && errorModalType !== 'edit' && addModalElement) {
+        const modal = bootstrap.Modal.getOrCreateInstance(addModalElement);
         modal.show();
     }
 
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
+    if (editForm && editForm.dataset.hasErrors === '1' && errorModalType === 'edit' && editModalElement) {
+        const modal = bootstrap.Modal.getOrCreateInstance(editModalElement);
+        modal.show();
+    }
+
+    const successMessage = pageRoot?.dataset.successMessage || '';
+    
+    function showSuccessAlertWhenReady() {
+        if (!successMessage) return;
+        if (typeof Swal !== 'undefined') {
+            showSweetAlert('success', 'Success', successMessage);
+        } else {
+            setTimeout(showSuccessAlertWhenReady, 100);
+        }
+    }
+    
+    showSuccessAlertWhenReady();
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
     });
 })();
 </script>
