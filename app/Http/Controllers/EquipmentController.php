@@ -778,7 +778,7 @@ class EquipmentController extends Controller
     private function equipmentXlsxLayout(array $columns, array $rows): array
     {
         $sheetColumnCount = max(count($columns), 8);
-        $tableHeaderRow = 11;
+        $tableHeaderRow = 7;
         $dataStartRow = $tableHeaderRow + 1;
         $lastRow = $tableHeaderRow;
         $currentGroup = null;
@@ -996,13 +996,12 @@ class EquipmentController extends Controller
             'C2:' . $lastSheetColumn . '2',
             'C3:' . $lastSheetColumn . '3',
             'C4:' . $lastSheetColumn . '4',
-            'A9:' . $lastSheetColumn . '9',
         ];
         $sheetRows = [];
 
         $this->addEquipmentXlsxHeaderRows($sheetRows, $meta, $sheetColumnCount);
-        $this->addEquipmentXlsxSummaryRows($sheetRows, $meta);
-        $this->addEquipmentXlsxTitleRow($sheetRows, 9, 'Equipment Records');
+        // $this->addEquipmentXlsxSummaryRows($sheetRows, $meta);
+        $this->addEquipmentXlsxTitleRow($sheetRows, 6, 'Equipment Records');
         $this->addEquipmentXlsxTableHeaderRow($sheetRows, $columns, $tableHeaderRow);
 
         $currentExcelRow = $tableHeaderRow + 1;
@@ -1251,7 +1250,7 @@ class EquipmentController extends Controller
             . '<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
             . '<xdr:twoCellAnchor editAs="oneCell">'
             . '<xdr:from><xdr:col>0</xdr:col><xdr:colOff>80000</xdr:colOff><xdr:row>0</xdr:row><xdr:rowOff>80000</xdr:rowOff></xdr:from>'
-            . '<xdr:to><xdr:col>2</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>4</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to>'
+            . '<xdr:to><xdr:col>2</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>5</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to>'
             . '<xdr:pic>'
             . '<xdr:nvPicPr><xdr:cNvPr id="1" name="BFAR Logo"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr>'
             . '<xdr:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill>'

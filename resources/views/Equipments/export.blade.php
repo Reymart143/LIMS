@@ -22,7 +22,7 @@
             top: -84px;
             left: 0;
             right: 0;
-            height: 72px;
+            height: 100px;
             border-bottom: 2px solid #173a5e;
         }
 
@@ -60,7 +60,7 @@
         .agency {
             margin: 0;
             color: #64748b;
-            font-size: 7.5px;
+            font-size: 11px;
             text-transform: uppercase;
         }
 
@@ -75,7 +75,7 @@
         .subtitle {
             margin-top: 3px;
             color: #475569;
-            font-size: 8.4px;
+            font-size: 12px;
         }
 
         .header-meta {
@@ -482,7 +482,7 @@
         <img class="watermark-logo" src="{{ $pdfAssets['watermark'] }}" alt="Watermark">
     @endif
 
-    <div class="accent-bar"></div>
+    <!-- <div class="accent-bar"></div> -->
 
     <!-- <h2 class="section-title">Export Summary <span class="rule"></span></h2>
     <table class="summary-table">
@@ -549,7 +549,7 @@
                         @endphp
                         <td class="align-{{ $align }} {{ $wrap }}">
                             @if(($column['key'] ?? '') === 'status_remarks')
-                                <span class="status-pill {{ $row['status_class'] ?? 'status-review' }}">{{ $value }}</span>
+                                <span class="{{ $row['status_class'] ?? 'status-review' }}">{{ $value }}</span>
                             @else
                                 {!! nl2br(e($value)) !!}
                             @endif
