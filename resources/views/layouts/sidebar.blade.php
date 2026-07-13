@@ -175,6 +175,46 @@
                             </li>
                         </ul>
                     </li>
+                    
+                    <!-- Equipments -->
+                    @php
+                        $equipmentMenuOpen = request()->routeIs('equipments.*');
+                    @endphp
+                    <li class="nav-item">
+                        <a class="nav-link {{ $equipmentMenuOpen ? 'active' : '' }}" data-bs-toggle="collapse" href="#sidebar-equipment" role="button" aria-expanded="{{ $equipmentMenuOpen ? 'true' : 'false' }}" aria-controls="sidebar-equipment">
+                            <i class="icon">
+                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+                                <image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAE3UlEQVR4AcyUe0yTZxTGn14sRYpAoWilA4QRKMoSFd2c4mZmhGl2H7vBNNuixqH7Y5fMZVORGZO5ZTPiZrZVnXE6VidORTFmKMHrxMJEmSIUAiIVKm2hF/rdd9rRxQuDuWTJTr435217zvN7zznvVzn+Y/v/AqbuOJ84/uPK9JEa8K8ryJ2VYZ75sPH3zK9rf9KVHJ78d6ARAVlPFs3WZue/gcx81a0i05TsqNVJcvm6x1Key8nOtGR8+WulflVFzq0xgf2IAL1WU7js5TxTVtrY5qTcZUWGGfnhgURRgqzR7kUqfFg/KUz26bzUvEempddkbjxx0vjF8bmBmMAaERAbE4V3X38Gez57O3HxUzmb70tNsWYXfvQezwvqrLEajFErwfEC5A473s9Q4fPc1JkTDfE/B8QDa1hAvtms4MOjYwEZEvTxWFGwAN+vK9IX5E7f4OtzG5t6fegfYCGKwNSUeERHqGGMUkALRglQEoChAcWS/HFz04suLqNBljXj2cYbfWjpdlE4MFYXi9eeyMH4+BgkjQkLioarFKhrs6PL4YFapQTP8RIFB9bQgDlJlvJohVD20oTwzJk6BT481o6CsgbsPtsCuUwGhYIOSOndAwL8LIebbj+MCTFIGx8D0MEJwGPQhqyg12ZPmKL2YV9DJ35s9qLjejc6rFZ02p2DaaROO4bjMUqpRGKcBh29HlzudIAhIAFE+jn43AXINTdqBZHTitTYHqcbto4O9LtcEASBei0FfSBTkiToI1SQQ0Jrdz/iNGF4ICkOkeEqiAJNPRBE6zbAtA2HxgkDfKsCUgrPc+DoNBzHBXoKgWOx9ZcLBBERECd9tLkphu7rREMMWEHExfabcPs5iFQZaQef2wBOho1w9PRELX/QgDqbD26PDzzLQub3IdmgR3LWJDg8A8EqvIKE6QmRUCsVaLzWS63hkZGgxZjRaqqJyg/K33GLREaQsywDhpJbvAAjyaDVapE9dy4W5T2EJdMNeOvgZSzZewlqexesfhJ3izRcLWIj1bDecKHP64fEi8KgPrWQdlSyos/jKTy8dFalnGNALxFYOjkNC+roaCy6X4XLXQ5sa/Lhao8bVXVXcNRyFbaL9fBfa8UrpQdPnr3uuaCP1SBSraA2Ur/wpwVbZKqoyW1r79ypG61MNS/MRkKEDAqeIQgDjmHhpVY1dPWjq7UNdpsNfr+f5gDYXH7oYjR4dJzyzKsz0iYX7Dg/v+xce7Wjf6AZgxYEHLVcqinZdXztlvJql8/jhTEuDN8uSIbp+Uk0MAaQxOCQGRJmaehCYPgMg8n09m4vO+Qz7TxQD8ikUyvnV76ZN2VOdfELszFoQcCe4iJP+fplxUfqmlNWb6tcu7em0cXRTcjQR2HjvETEqghAs+HoJunoP3XplDhwN6/7F64s3Ww6cDbt2hnzD4N6d7kgIPTtyS0fOCs2vlNcXXt1wlrTkTXbK047NTIBs4yJ+GpBCpZP1eFpg4yrOmExldc0pHef2b0CTQe6QvlD+dsAoYDq74pdVVtXl1TVWicsX799zZrS3c7ahmahuua3XftPN01s3LdpsfPUzo5Q/HB+SEAowbLnkz7LvtKSY/X1yfvPXUkncGFrxaa/BhiKG84PCwgltlTu6j/9zSpr6PO9+H8EuBfBO2P/AAAA//9D0HFIAAAABklEQVQDAM4pOE/mkG/OAAAAAElFTkSuQmCC" x="0" y="0" width="24" height="24"/>
+                            </svg>
+                             </i>
+                            <span class="item-name">Equipment</span>
+                        </a>
+                        <ul class="sub-nav collapse {{ $equipmentMenuOpen ? 'show' : '' }}" id="sidebar-equipment" data-bs-parent="#sidebar-menu">
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('equipments.index', 'equipments.create', 'equipments.edit') ? 'active' : '' }}" href="{{ route('equipments.index') }}">
+                                    <i class="icon">
+                                        <svg class="icon-10" xmlns="http://www.w3.org/2000/svg" width="10" viewBox="0 0 24 24" fill="currentColor">
+                                            <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
+                                        </svg>
+                                    </i>
+                                    <i class="sidenav-mini-icon"> EL </i>
+                                    <span class="item-name">Equipment List</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('equipments.reports') ? 'active' : '' }}" href="{{ route('equipments.reports') }}">
+                                    <i class="icon">
+                                        <svg class="icon-10" xmlns="http://www.w3.org/2000/svg" width="10" viewBox="0 0 24 24" fill="currentColor">
+                                            <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
+                                        </svg>
+                                    </i>
+                                    <i class="sidenav-mini-icon"> RP </i>
+                                    <span class="item-name">Reports</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
                       <li class="nav-item static-item">
                         <a class="nav-link static-item disabled" href="#" tabindex="-1">
                             <span class="default-icon">Pages</span>

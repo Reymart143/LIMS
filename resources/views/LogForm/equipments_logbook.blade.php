@@ -171,7 +171,7 @@
 </a>    
 <div class="container-fluid">
     <div class="page-wrap">
-        <form method="POST" action="{{ route('equipments.store')}}">
+        <form method="POST" action="{{ route('equipments_lf_03_05.store')}}">
             @csrf
             <input type="hidden" name="equipment_id" value="{{ $id }}">
 

@@ -1,4 +1,4 @@
-     @if(session('success'))
+    @if(session('success') && !request()->routeIs('equipments.*'))
       <div class="mb-3 alert alert-left alert-success alert-dismissible fade show auto-dismiss"
          role="alert"
          style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
@@ -11,7 +11,7 @@
       @endif
 
 
-      @if(session('error'))
+    @if(session('error') && !request()->routeIs('equipments.*'))
       <div class="mb-3 alert alert-bottom alert-danger alert-dismissible fade show auto-dismiss"
          role="alert"
          style="position: fixed; top: 20px; right: 20px; z-index: 9999;">

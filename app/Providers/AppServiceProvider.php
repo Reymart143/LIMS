@@ -39,10 +39,10 @@ class AppServiceProvider extends ServiceProvider
                     
                     $query->whereRaw("JSON_CONTAINS(lf_06_02.lab_unit, '\"MIC\"')");
                 } elseif ($userRole == 7) {
-                 
+                   
                     $query->whereRaw("JSON_CONTAINS(lf_06_02.lab_unit, '\"CHEM\"')");
                 } elseif ($userRole == 0) {
-                   
+                    
                 } else {
                     $query->whereRaw('1 = 0');
                 }
