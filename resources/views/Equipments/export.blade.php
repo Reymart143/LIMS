@@ -329,6 +329,8 @@
             'document_code' => 'LIMS-EQ-EXP',
             'generated_at' => now()->format('Y-m-d H:i:s'),
             'search' => $filters['search'] ?? 'None',
+            'applied_filters' => $filters['applied'] ?? [],
+            'filter_summary' => $filters['summary'] ?? ($filters['search'] ?? 'None'),
             'organization' => [
                 'republic' => 'Republic of the Philippines',
                 'department' => 'Department of Agriculture',
@@ -472,7 +474,7 @@
                 <td class="header-meta">
                     <span class="doc-code">{{ $pdfMeta['document_code'] }}</span><br>
                     Generated: {{ $pdfMeta['generated_at'] }}<br>
-                    Search: {{ $pdfMeta['search'] }}
+                    Filters: {{ \Illuminate\Support\Str::limit($pdfMeta['filter_summary'] ?? $pdfMeta['search'], 82) }}
                 </td>
             </tr>
         </table>
@@ -499,13 +501,13 @@
                 </td>
             @endforelse
         </tr>
-    </table> -->
+    </table>
 
-    <!-- <table class="meta-table">
+    <table class="meta-table">
         <tr>
             <td>
-                <span class="meta-label">Layout:</span>
-                A4 landscape, controlled margins, repeated table headers, grouped rows, fixed-width columns
+                <span class="meta-label">Applied filters:</span>
+                {{ $pdfMeta['filter_summary'] ?? 'None' }}
             </td>
             <td>
                 <span class="meta-label">Selected columns:</span>

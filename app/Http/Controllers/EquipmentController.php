@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
@@ -39,11 +40,11 @@ class EquipmentController extends Controller
     {
         $format = strtolower((string) $request->input('format', 'xlsx'));
         $columns = $this->resolveEquipmentColumns($request->input('columns', []));
-        $equipments = $this->equipmentQuery($request)->orderBy('id', 'desc')->get();
+        $exportQuery = $this->equipmentQuery($request);
+        $this->orderEquipmentReportQuery($exportQuery, $request);
+        $equipments = $exportQuery->get();
         $users = DB::table('users')->select('id', 'f_name', 'm_name', 'l_name')->get()->keyBy('id');
-        $filters = [
-            'search' => trim((string) $request->input('search', '')),
-        ];
+        $filters = $this->equipmentAppliedReportFilters($request, $this->equipmentTableColumns(), $users);
 
         $rows = $this->equipmentExportRows($columns, $equipments, $users);
 
@@ -77,6 +78,42 @@ class EquipmentController extends Controller
         }
 
         return $this->downloadEquipmentExcel($columns, $equipments, $users, $filters);
+    }
+
+    public function reports(Request $request)
+    {
+        $equipmentTableColumns = $this->equipmentTableColumns();
+        $users = DB::table('users')->select('id', 'f_name', 'm_name', 'l_name')->get();
+        $usersById = $users->keyBy('id');
+        $filteredQuery = $this->equipmentQuery($request);
+        $this->orderEquipmentReportQuery($filteredQuery, $request);
+
+        $filteredEquipments = (clone $filteredQuery)->get();
+        $reportEquipments = (clone $filteredQuery)->paginate(15)->withQueryString();
+        $reportRows = $this->equipmentReportRows($equipmentTableColumns, $reportEquipments->getCollection(), $usersById);
+        $reportStats = $this->equipmentReportStats($filteredEquipments);
+        $chartData = $this->equipmentReportChartData($filteredEquipments);
+        $filterOptions = $this->equipmentReportFilterOptions();
+        $reportTypes = $this->equipmentReportTypes();
+        $appliedFilters = $this->equipmentAppliedReportFilters($request, $equipmentTableColumns, $usersById);
+        $defaultColumnKeys = collect($equipmentTableColumns)
+            ->filter(fn ($column) => !empty($column['default_visible']) || in_array($column['key'], ['date_acquired', 'location', 'person_in_charge'], true))
+            ->pluck('key')
+            ->values()
+            ->all();
+
+        return view('Equipments.reports', compact(
+            'equipmentTableColumns',
+            'users',
+            'reportEquipments',
+            'reportRows',
+            'reportStats',
+            'chartData',
+            'filterOptions',
+            'reportTypes',
+            'appliedFilters',
+            'defaultColumnKeys'
+        ));
     }
 
     public function create()
@@ -231,7 +268,684 @@ class EquipmentController extends Controller
             });
         }
 
+        $this->applyEquipmentReportType($query, (string) $request->input('report_type', ''));
+
+        $textFilters = [
+            'equipment' => 'equipment',
+            'equipment_name' => 'equipment',
+            'equipment_no' => 'equipment_no',
+            'asset_code' => 'equipment_no',
+            'inventory_number' => 'equipment_no',
+            'unit' => 'unit',
+            'rfl_control_no' => 'rfl_control_no',
+            'description' => 'description',
+            'brand_model' => 'brand_model',
+            'brand' => 'brand_model',
+            'model' => 'brand_model',
+            'location' => 'location',
+            'office_location' => 'location',
+            'department' => 'location',
+            'status_remarks' => 'status_remarks',
+            'condition' => 'status_remarks',
+            'maintenance_status' => 'status_remarks',
+            'updates' => 'updates',
+            'custom_tags' => 'updates',
+        ];
+
+        foreach ($textFilters as $input => $column) {
+            $value = trim((string) $request->input($input, ''));
+
+            if ($value !== '') {
+                $query->where($column, 'like', '%' . $value . '%');
+            }
+        }
+
+        foreach (['availability', 'status_group'] as $statusInput) {
+            $status = trim((string) $request->input($statusInput, ''));
+
+            if ($status !== '') {
+                $this->applyEquipmentStatusScope($query, $status);
+            }
+        }
+
+        $personInCharge = trim((string) ($request->input('person_in_charge') ?: $request->input('assigned_user', '')));
+        if ($personInCharge !== '') {
+            $this->applyEquipmentPersonInChargeFilter($query, $personInCharge);
+        }
+
+        $this->applyEquipmentDateFilters($query, $request);
+
+        foreach (['qty', 'received_quantity', 'used_quantity', 'balance_quantity', 'unit_cost', 'total_cost'] as $column) {
+            $this->applyEquipmentNumericRange($query, $column, $request->input($column . '_min'), $request->input($column . '_max'));
+        }
+
         return $query;
+    }
+
+    private function applyEquipmentReportType($query, string $reportType): void
+    {
+        $reportType = trim($reportType);
+
+        if ($reportType === '') {
+            return;
+        }
+
+        match ($reportType) {
+            'equipment_in_use', 'currently_in_use', 'assignment_history' => $this->applyEquipmentStatusScope($query, 'in_use'),
+            'equipment_available' => $this->applyEquipmentStatusScope($query, 'available'),
+            'under_maintenance', 'upcoming_maintenance', 'maintenance_history', 'maintenance_frequency' => $this->applyEquipmentStatusScope($query, 'maintenance'),
+            'damaged_equipment' => $this->applyEquipmentStatusScope($query, 'damaged'),
+            'lost_equipment' => $this->applyEquipmentStatusScope($query, 'lost'),
+            'retired_equipment', 'inactive_equipment' => $this->applyEquipmentStatusScope($query, 'retired'),
+            'active_equipment' => $query->where(function ($builder) {
+                $builder->whereNull('status_remarks')
+                    ->orWhere(function ($statusBuilder) {
+                        $statusBuilder->whereRaw("LOWER(COALESCE(status_remarks, '')) NOT LIKE ?", ['%retired%'])
+                            ->whereRaw("LOWER(COALESCE(status_remarks, '')) NOT LIKE ?", ['%disposed%'])
+                            ->whereRaw("LOWER(COALESCE(status_remarks, '')) NOT LIKE ?", ['%inactive%']);
+                    });
+            }),
+            'newly_added_this_month' => $query->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]),
+            default => null,
+        };
+    }
+
+    private function applyEquipmentStatusScope($query, string $scope): void
+    {
+        $scope = strtolower(trim($scope));
+
+        $query->where(function ($builder) use ($scope) {
+            match ($scope) {
+                'available' => $builder->whereNull('status_remarks')
+                    ->orWhere('status_remarks', '')
+                    ->orWhereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%available%'])
+                    ->orWhereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%ready%']),
+                'in_use', 'in-use', 'used', 'assigned' => $builder->whereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%in use%'])
+                    ->orWhereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%assigned%'])
+                    ->orWhereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%issued%']),
+                'maintenance', 'under_maintenance' => $builder->whereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%maintenance%'])
+                    ->orWhereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%repair%'])
+                    ->orWhereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%calibration%']),
+                'damaged' => $builder->whereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%damaged%'])
+                    ->orWhereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%defective%'])
+                    ->orWhereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%broken%']),
+                'lost' => $builder->whereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%lost%'])
+                    ->orWhereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%missing%']),
+                'retired', 'inactive' => $builder->whereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%retired%'])
+                    ->orWhereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%disposed%'])
+                    ->orWhereRaw("LOWER(COALESCE(status_remarks, '')) LIKE ?", ['%inactive%']),
+                default => $builder->where('status_remarks', 'like', '%' . $scope . '%'),
+            };
+        });
+    }
+
+    private function applyEquipmentPersonInChargeFilter($query, string $personInCharge): void
+    {
+        $driver = DB::connection()->getDriverName();
+
+        $query->where(function ($builder) use ($personInCharge, $driver) {
+            if (in_array($driver, ['mysql', 'pgsql'], true)) {
+                $builder->whereJsonContains('person_in_charge', is_numeric($personInCharge) ? (int) $personInCharge : $personInCharge)
+                    ->orWhereJsonContains('person_in_charge', (string) $personInCharge);
+            }
+
+            $builder->orWhere('person_in_charge', 'like', '%"' . $personInCharge . '"%')
+                ->orWhere('person_in_charge', 'like', '%' . $personInCharge . '%');
+        });
+    }
+
+    private function applyEquipmentDateFilters($query, Request $request): void
+    {
+        $dateColumn = in_array($request->input('date_basis'), ['date_acquired', 'created_at', 'updated_at'], true)
+            ? $request->input('date_basis')
+            : 'date_acquired';
+
+        $from = $this->parseReportDate($request->input('date_from') ?: $request->input('purchase_date_from'));
+        $to = $this->parseReportDate($request->input('date_to') ?: $request->input('purchase_date_to'));
+        $day = $this->parseReportDate($request->input('day') ?: $request->input('purchase_date'));
+
+        if ($from) {
+            $query->whereDate($dateColumn, '>=', $from->toDateString());
+        }
+
+        if ($to) {
+            $query->whereDate($dateColumn, '<=', $to->toDateString());
+        }
+
+        if ($day) {
+            $query->whereDate($dateColumn, $day->toDateString());
+        }
+
+        if ($week = trim((string) $request->input('week', ''))) {
+            $range = $this->reportWeekRange($week);
+
+            if ($range) {
+                $query->whereBetween($dateColumn, [$range[0]->startOfDay(), $range[1]->endOfDay()]);
+            }
+        }
+
+        if ($month = trim((string) $request->input('month', ''))) {
+            $monthStart = $this->parseReportDate($month . '-01') ?: $this->parseReportDate($month);
+
+            if ($monthStart) {
+                $query->whereBetween($dateColumn, [$monthStart->copy()->startOfMonth(), $monthStart->copy()->endOfMonth()]);
+            }
+        }
+
+        $year = (int) $request->input('year', 0);
+        $quarter = (int) $request->input('quarter', 0);
+
+        if ($year > 0 && $quarter >= 1 && $quarter <= 4) {
+            $start = Carbon::create($year, (($quarter - 1) * 3) + 1, 1)->startOfQuarter();
+            $query->whereBetween($dateColumn, [$start, $start->copy()->endOfQuarter()]);
+        } elseif ($year > 0) {
+            $query->whereBetween($dateColumn, [
+                Carbon::create($year, 1, 1)->startOfYear(),
+                Carbon::create($year, 12, 31)->endOfYear(),
+            ]);
+        }
+    }
+
+    private function applyEquipmentNumericRange($query, string $column, mixed $min, mixed $max): void
+    {
+        if ($min !== null && $min !== '' && is_numeric($min)) {
+            $query->where($column, '>=', $min);
+        }
+
+        if ($max !== null && $max !== '' && is_numeric($max)) {
+            $query->where($column, '<=', $max);
+        }
+    }
+
+    private function parseReportDate(mixed $value): ?Carbon
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return Carbon::instance($value);
+        }
+
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value);
+        } catch (\Throwable $exception) {
+            return null;
+        }
+    }
+
+    private function reportWeekRange(string $week): ?array
+    {
+        if (preg_match('/^(\d{4})-W(\d{1,2})$/', $week, $matches)) {
+            $start = Carbon::now()->setISODate((int) $matches[1], (int) $matches[2])->startOfWeek();
+
+            return [$start, $start->copy()->endOfWeek()];
+        }
+
+        $date = $this->parseReportDate($week);
+
+        return $date ? [$date->copy()->startOfWeek(), $date->copy()->endOfWeek()] : null;
+    }
+
+    private function orderEquipmentReportQuery($query, Request $request): void
+    {
+        match ((string) $request->input('report_type', '')) {
+            'most_used', 'equipment_utilization_rate' => $query->orderByDesc('used_quantity')->orderByDesc('id'),
+            'least_used' => $query->orderBy('used_quantity')->orderByDesc('id'),
+            'purchase_cost_summary' => $query->orderByDesc('total_cost')->orderByDesc('id'),
+            'newly_added_this_month', 'equipment_added_by_month', 'equipment_added_by_year' => $query->orderByDesc('created_at')->orderByDesc('id'),
+            default => $query->orderByDesc('id'),
+        };
+    }
+
+    private function equipmentReportRows(array $columns, $equipments, $users): array
+    {
+        return $equipments->mapWithKeys(function ($equipment) use ($columns, $users) {
+            $cells = collect($columns)->mapWithKeys(function ($column) use ($equipment, $users) {
+                return [$column['key'] => $this->equipmentExportValue($equipment, $column['key'], $users)];
+            })->all();
+
+            return [$equipment->id => $cells];
+        })->all();
+    }
+
+    private function equipmentReportStats($equipments): array
+    {
+        $counts = [
+            'total' => $equipments->count(),
+            'available' => 0,
+            'in_use' => 0,
+            'maintenance' => 0,
+            'damaged' => 0,
+            'lost' => 0,
+            'retired' => 0,
+            'review' => 0,
+            'new_this_month' => 0,
+            'maintenance_due' => 0,
+        ];
+        $totalValue = 0.0;
+        $totalQuantity = 0;
+        $currentMonth = now()->format('Y-m');
+
+        foreach ($equipments as $equipment) {
+            $bucket = $this->equipmentStatusBucket($equipment->status_remarks ?? null);
+            $counts[$bucket] = ($counts[$bucket] ?? 0) + 1;
+
+            $createdAt = $this->parseReportDate($equipment->created_at ?? null);
+            if ($createdAt && $createdAt->format('Y-m') === $currentMonth) {
+                $counts['new_this_month']++;
+            }
+
+            $statusText = strtolower($this->formatExportValue($equipment->status_remarks ?? null) . ' ' . $this->formatExportValue($equipment->updates ?? null));
+            if ($bucket === 'maintenance' || str_contains($statusText, 'due') || str_contains($statusText, 'calibration')) {
+                $counts['maintenance_due']++;
+            }
+
+            $totalValue += is_numeric($equipment->total_cost ?? null) ? (float) $equipment->total_cost : 0.0;
+            $totalQuantity += is_numeric($equipment->qty ?? null) ? (int) $equipment->qty : 0;
+        }
+
+        $utilizationRate = $counts['total'] > 0
+            ? round(($counts['in_use'] / max(1, $counts['total'])) * 100, 1)
+            : 0.0;
+
+        return [
+            'counts' => $counts,
+            'total_value' => $totalValue,
+            'total_quantity' => $totalQuantity,
+            'utilization_rate' => $utilizationRate,
+            'cards' => [
+                ['label' => 'Total Equipment', 'value' => number_format($counts['total']), 'tone' => 'primary', 'note' => 'Filtered records'],
+                ['label' => 'Available Equipment', 'value' => number_format($counts['available']), 'tone' => 'success', 'note' => 'Ready or unassigned'],
+                ['label' => 'Currently In Use', 'value' => number_format($counts['in_use']), 'tone' => 'info', 'note' => $utilizationRate . '% utilization'],
+                ['label' => 'Under Maintenance', 'value' => number_format($counts['maintenance']), 'tone' => 'warning', 'note' => 'Maintenance status'],
+                ['label' => 'Damaged Equipment', 'value' => number_format($counts['damaged']), 'tone' => 'danger', 'note' => 'Needs review'],
+                ['label' => 'Lost Equipment', 'value' => number_format($counts['lost']), 'tone' => 'danger', 'note' => 'Missing records'],
+                ['label' => 'Retired Equipment', 'value' => number_format($counts['retired']), 'tone' => 'muted', 'note' => 'Disposed or inactive'],
+                ['label' => 'New This Month', 'value' => number_format($counts['new_this_month']), 'tone' => 'teal', 'note' => 'Created this month'],
+                ['label' => 'Maintenance Watchlist', 'value' => number_format($counts['maintenance_due']), 'tone' => 'warning', 'note' => 'Due, repair, or calibration'],
+                ['label' => 'Inventory Value', 'value' => number_format($totalValue, 2), 'tone' => 'primary', 'note' => number_format($totalQuantity) . ' total quantity'],
+            ],
+        ];
+    }
+
+    private function equipmentReportChartData($equipments): array
+    {
+        $statusCounts = [
+            'available' => 0,
+            'in_use' => 0,
+            'maintenance' => 0,
+            'damaged' => 0,
+            'lost' => 0,
+            'retired' => 0,
+            'review' => 0,
+        ];
+        $locationCounts = [];
+        $brandCounts = [];
+        $quantityTotals = [
+            'Received' => 0,
+            'Used' => 0,
+            'Balance' => 0,
+        ];
+        $months = [];
+
+        for ($offset = 11; $offset >= 0; $offset--) {
+            $month = now()->startOfMonth()->subMonths($offset);
+            $months[$month->format('Y-m')] = [
+                'label' => $month->format('M Y'),
+                'added' => 0,
+                'maintenance' => 0,
+            ];
+        }
+
+        foreach ($equipments as $equipment) {
+            $bucket = $this->equipmentStatusBucket($equipment->status_remarks ?? null);
+            $statusCounts[$bucket] = ($statusCounts[$bucket] ?? 0) + 1;
+
+            $location = $this->formatExportValue($equipment->location ?? null);
+            $location = $location === 'N/A' ? 'Unassigned Location' : $location;
+            $locationCounts[$location] = ($locationCounts[$location] ?? 0) + 1;
+
+            $brand = $this->formatExportValue($equipment->brand_model ?? null);
+            $brand = $brand === 'N/A' ? 'Unspecified Brand' : $brand;
+            $brandCounts[$brand] = ($brandCounts[$brand] ?? 0) + 1;
+
+            $quantityTotals['Received'] += is_numeric($equipment->received_quantity ?? null) ? (int) $equipment->received_quantity : 0;
+            $quantityTotals['Used'] += is_numeric($equipment->used_quantity ?? null) ? (int) $equipment->used_quantity : 0;
+            $quantityTotals['Balance'] += is_numeric($equipment->balance_quantity ?? null) ? (int) $equipment->balance_quantity : 0;
+
+            $recordDate = $this->parseReportDate($equipment->date_acquired ?? null) ?: $this->parseReportDate($equipment->created_at ?? null);
+            if ($recordDate && isset($months[$recordDate->format('Y-m')])) {
+                $months[$recordDate->format('Y-m')]['added']++;
+
+                if ($bucket === 'maintenance') {
+                    $months[$recordDate->format('Y-m')]['maintenance']++;
+                }
+            }
+        }
+
+        arsort($locationCounts);
+        arsort($brandCounts);
+
+        $statusLabels = [
+            'available' => 'Available',
+            'in_use' => 'In Use',
+            'maintenance' => 'Maintenance',
+            'damaged' => 'Damaged',
+            'lost' => 'Lost',
+            'retired' => 'Retired',
+            'review' => 'Needs Review',
+        ];
+        $statusColors = ['#15803d', '#0369a1', '#d7a642', '#b91c1c', '#7f1d1d', '#64748b', '#475569'];
+        $availabilityData = [
+            $statusCounts['available'],
+            $statusCounts['in_use'],
+            $statusCounts['maintenance'],
+            $statusCounts['damaged'] + $statusCounts['lost'] + $statusCounts['retired'] + $statusCounts['review'],
+        ];
+
+        return [
+            'statusDistribution' => [
+                'labels' => array_values($statusLabels),
+                'data' => array_map(fn ($key) => $statusCounts[$key], array_keys($statusLabels)),
+                'colors' => $statusColors,
+            ],
+            'availability' => [
+                'labels' => ['Available', 'In Use', 'Maintenance', 'Unavailable/Review'],
+                'data' => $availabilityData,
+                'colors' => ['#15803d', '#0369a1', '#d7a642', '#b91c1c'],
+            ],
+            'addedPerMonth' => [
+                'labels' => array_column($months, 'label'),
+                'added' => array_column($months, 'added'),
+                'maintenance' => array_column($months, 'maintenance'),
+            ],
+            'locationDistribution' => [
+                'labels' => array_slice(array_keys($locationCounts), 0, 8),
+                'data' => array_slice(array_values($locationCounts), 0, 8),
+            ],
+            'brandDistribution' => [
+                'labels' => array_slice(array_keys($brandCounts), 0, 8),
+                'data' => array_slice(array_values($brandCounts), 0, 8),
+            ],
+            'quantitySummary' => [
+                'labels' => array_keys($quantityTotals),
+                'data' => array_values($quantityTotals),
+                'colors' => ['#173a5e', '#0369a1', '#15803d'],
+            ],
+        ];
+    }
+
+    private function equipmentReportFilterOptions(): array
+    {
+        $dateYears = Equipment::query()
+            ->whereNotNull('date_acquired')
+            ->pluck('date_acquired')
+            ->map(fn ($date) => optional($this->parseReportDate($date))->year)
+            ->filter()
+            ->unique()
+            ->sortDesc()
+            ->values()
+            ->all();
+
+        return [
+            'equipment' => $this->equipmentDistinctOptions('equipment'),
+            'equipment_no' => $this->equipmentDistinctOptions('equipment_no'),
+            'unit' => $this->equipmentDistinctOptions('unit'),
+            'rfl_control_no' => $this->equipmentDistinctOptions('rfl_control_no'),
+            'brand_model' => $this->equipmentDistinctOptions('brand_model'),
+            'location' => $this->equipmentDistinctOptions('location'),
+            'status_remarks' => $this->equipmentDistinctOptions('status_remarks'),
+            'years' => $dateYears,
+        ];
+    }
+
+    private function equipmentDistinctOptions(string $column): array
+    {
+        return Equipment::query()
+            ->whereNotNull($column)
+            ->where($column, '!=', '')
+            ->select($column)
+            ->distinct()
+            ->orderBy($column)
+            ->limit(200)
+            ->pluck($column)
+            ->map(fn ($value) => $this->formatExportValue($value))
+            ->filter(fn ($value) => $value !== 'N/A')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function equipmentReportTypes(): array
+    {
+        return [
+            [
+                'group' => 'Inventory Reports',
+                'items' => [
+                    ['value' => 'complete_inventory', 'label' => 'Complete Equipment Inventory'],
+                    ['value' => 'inventory_by_location', 'label' => 'Inventory by Location'],
+                    ['value' => 'inventory_by_brand', 'label' => 'Inventory by Brand/Model'],
+                    ['value' => 'inventory_by_status', 'label' => 'Inventory by Status'],
+                ],
+            ],
+            [
+                'group' => 'Usage Reports',
+                'items' => [
+                    ['value' => 'equipment_in_use', 'label' => 'Equipment Currently in Use'],
+                    ['value' => 'equipment_available', 'label' => 'Equipment Available'],
+                    ['value' => 'equipment_utilization_rate', 'label' => 'Equipment Utilization Rate'],
+                    ['value' => 'most_used', 'label' => 'Most Frequently Used Equipment'],
+                    ['value' => 'least_used', 'label' => 'Least Used Equipment'],
+                    ['value' => 'assignment_history', 'label' => 'Equipment Assignment History'],
+                ],
+            ],
+            [
+                'group' => 'Status Reports',
+                'items' => [
+                    ['value' => 'active_equipment', 'label' => 'Active Equipment'],
+                    ['value' => 'inactive_equipment', 'label' => 'Inactive Equipment'],
+                    ['value' => 'under_maintenance', 'label' => 'Under Maintenance'],
+                    ['value' => 'damaged_equipment', 'label' => 'Damaged Equipment'],
+                    ['value' => 'lost_equipment', 'label' => 'Lost Equipment'],
+                    ['value' => 'retired_equipment', 'label' => 'Retired Equipment'],
+                ],
+            ],
+            [
+                'group' => 'Maintenance Reports',
+                'items' => [
+                    ['value' => 'upcoming_maintenance', 'label' => 'Upcoming Maintenance'],
+                    ['value' => 'maintenance_history', 'label' => 'Maintenance History'],
+                    ['value' => 'maintenance_frequency', 'label' => 'Maintenance Frequency'],
+                ],
+            ],
+            [
+                'group' => 'Acquisition Reports',
+                'items' => [
+                    ['value' => 'newly_added_this_month', 'label' => 'Newly Added This Month'],
+                    ['value' => 'equipment_added_by_month', 'label' => 'Equipment Added by Month'],
+                    ['value' => 'equipment_added_by_year', 'label' => 'Equipment Added by Year'],
+                    ['value' => 'purchase_cost_summary', 'label' => 'Purchase Cost Summary'],
+                ],
+            ],
+        ];
+    }
+
+    private function equipmentAppliedReportFilters(Request $request, array $columns, $users = null): array
+    {
+        $applied = [];
+        $search = trim((string) $request->input('search', ''));
+        $reportType = trim((string) $request->input('report_type', ''));
+        $columnLabels = collect($columns)->pluck('label', 'key');
+        $dateBasisLabels = [
+            'date_acquired' => 'Date Acquired',
+            'created_at' => 'Created Date',
+            'updated_at' => 'Last Updated',
+        ];
+        $hasDateFilter = collect(['date_from', 'date_to', 'day', 'week', 'month', 'quarter', 'year', 'purchase_date', 'purchase_date_from', 'purchase_date_to'])
+            ->contains(fn ($input) => trim((string) $request->input($input, '')) !== '');
+
+        if ($reportType !== '') {
+            $applied[] = ['label' => 'Report Type', 'value' => $this->equipmentReportTypeLabel($reportType)];
+        }
+
+        $filterLabels = [
+            'search' => 'Search',
+            'date_basis' => 'Date Basis',
+            'date_from' => 'Date From',
+            'date_to' => 'Date To',
+            'day' => 'Day',
+            'week' => 'Week',
+            'month' => 'Month',
+            'quarter' => 'Quarter',
+            'year' => 'Year',
+            'equipment' => 'Equipment',
+            'equipment_no' => 'Equipment No.',
+            'unit' => 'Unit',
+            'rfl_control_no' => 'RFL Control No.',
+            'description' => 'Description',
+            'brand_model' => 'Brand/Model',
+            'location' => 'Location',
+            'status_remarks' => 'Status/Remarks',
+            'updates' => 'Updates/Tags',
+            'availability' => 'Availability',
+            'status_group' => 'Status Group',
+            'person_in_charge' => 'Assigned User',
+            'qty_min' => 'Minimum Quantity',
+            'qty_max' => 'Maximum Quantity',
+            'received_quantity_min' => 'Minimum Received Quantity',
+            'received_quantity_max' => 'Maximum Received Quantity',
+            'used_quantity_min' => 'Minimum Used Quantity',
+            'used_quantity_max' => 'Maximum Used Quantity',
+            'balance_quantity_min' => 'Minimum Balance',
+            'balance_quantity_max' => 'Maximum Balance',
+            'unit_cost_min' => 'Minimum Unit Cost',
+            'unit_cost_max' => 'Maximum Unit Cost',
+            'total_cost_min' => 'Minimum Total Cost',
+            'total_cost_max' => 'Maximum Total Cost',
+        ];
+
+        foreach ($filterLabels as $input => $label) {
+            $value = trim((string) $request->input($input, ''));
+
+            if ($value === '') {
+                continue;
+            }
+
+            if ($input === 'date_basis') {
+                if (!$hasDateFilter) {
+                    continue;
+                }
+
+                $value = $dateBasisLabels[$value] ?? $columnLabels->get($value, str_replace('_', ' ', $value));
+            }
+
+            if (in_array($input, ['availability', 'status_group'], true)) {
+                $value = $this->equipmentStatusLabel($value);
+            }
+
+            if ($input === 'person_in_charge') {
+                $value = $this->equipmentUserDisplayName($users, $value);
+            }
+
+            $applied[] = ['label' => $label, 'value' => $value];
+        }
+
+        $summary = $this->equipmentFilterSummary($applied);
+
+        return [
+            'search' => $search,
+            'applied' => $applied,
+            'summary' => $summary,
+            'report_type' => $reportType,
+            'report_title' => $reportType !== '' ? $this->equipmentReportTypeLabel($reportType) : 'Equipment Inventory',
+        ];
+    }
+
+    private function equipmentReportTypeLabel(string $reportType): string
+    {
+        foreach ($this->equipmentReportTypes() as $group) {
+            foreach ($group['items'] as $item) {
+                if ($item['value'] === $reportType) {
+                    return $item['label'];
+                }
+            }
+        }
+
+        return str_replace('_', ' ', ucwords($reportType, '_'));
+    }
+
+    private function equipmentFilterSummary(array $applied): string
+    {
+        if (empty($applied)) {
+            return 'None';
+        }
+
+        return collect($applied)
+            ->map(fn ($filter) => ($filter['label'] ?? 'Filter') . ': ' . ($filter['value'] ?? ''))
+            ->implode(' | ');
+    }
+
+    private function equipmentUserDisplayName($users, mixed $userId): string
+    {
+        if (!$users instanceof Collection) {
+            return (string) $userId;
+        }
+
+        $user = $users->get($userId) ?: $users->firstWhere('id', is_numeric($userId) ? (int) $userId : $userId);
+
+        if (!$user) {
+            return (string) $userId;
+        }
+
+        return trim(collect([$user->f_name ?? null, $user->m_name ?? null, $user->l_name ?? null])->filter()->implode(' '));
+    }
+
+    private function equipmentStatusBucket(mixed $status): string
+    {
+        $status = strtolower($this->formatExportValue($status));
+
+        if (str_contains($status, 'retired') || str_contains($status, 'disposed') || str_contains($status, 'inactive')) {
+            return 'retired';
+        }
+
+        if (str_contains($status, 'lost') || str_contains($status, 'missing')) {
+            return 'lost';
+        }
+
+        if (str_contains($status, 'damaged') || str_contains($status, 'defective') || str_contains($status, 'broken')) {
+            return 'damaged';
+        }
+
+        if (str_contains($status, 'maintenance') || str_contains($status, 'repair') || str_contains($status, 'calibration')) {
+            return 'maintenance';
+        }
+
+        if (str_contains($status, 'in use') || str_contains($status, 'assigned') || str_contains($status, 'issued')) {
+            return 'in_use';
+        }
+
+        if ($status === 'n/a' || str_contains($status, 'available') || str_contains($status, 'ready')) {
+            return 'available';
+        }
+
+        return 'review';
+    }
+
+    private function equipmentStatusLabel(string $status): string
+    {
+        return match (strtolower(trim($status))) {
+            'available' => 'Available',
+            'in_use', 'in-use', 'used', 'assigned' => 'In Use',
+            'maintenance', 'under_maintenance' => 'Maintenance',
+            'damaged' => 'Damaged',
+            'lost' => 'Lost',
+            'retired', 'inactive' => 'Retired/Inactive',
+            'review' => 'Needs Review',
+            default => str_replace('_', ' ', ucwords($status, '_')),
+        };
     }
 
     private function equipmentTableColumns(): array
@@ -345,33 +1059,17 @@ class EquipmentController extends Controller
 
     private function equipmentPdfMeta($equipments, array $columns, array $filters): array
     {
-        $total = $equipments->count();
-        $available = 0;
-        $inUse = 0;
-        $maintenance = 0;
-
-        foreach ($equipments as $equipment) {
-            $status = strtolower($this->formatExportValue($equipment->status_remarks ?? null));
-
-            if ($status === 'n/a' || str_contains($status, 'available')) {
-                $available++;
-            }
-
-            if (str_contains($status, 'in use')) {
-                $inUse++;
-            }
-
-            if (str_contains($status, 'maintenance')) {
-                $maintenance++;
-            }
-        }
+        $stats = $this->equipmentReportStats($equipments);
+        $counts = $stats['counts'];
 
         return [
-            'title' => 'Equipment Inventory',
-            'subtitle' => 'Controlled export of laboratory equipment records',
+            'title' => $filters['report_title'] ?? 'Equipment Inventory',
+            'subtitle' => 'Controlled export of laboratory equipment report records',
             'document_code' => 'LIMS-EQ-EXP',
             'generated_at' => now()->format('Y-m-d H:i:s'),
-            'search' => $filters['search'] ?: 'None',
+            'search' => ($filters['search'] ?? '') ?: 'None',
+            'applied_filters' => $filters['applied'] ?? [],
+            'filter_summary' => $filters['summary'] ?? (($filters['search'] ?? '') ?: 'None'),
             'organization' => [
                 'republic' => 'Republic of the Philippines',
                 'department' => 'Department of Agriculture',
@@ -380,11 +1078,12 @@ class EquipmentController extends Controller
                 'address' => 'J. Catolico St., Lagao, General Santos City',
             ],
             'summary' => [
-                ['label' => 'Records', 'value' => number_format($total), 'tone' => 'primary'],
+                ['label' => 'Records', 'value' => number_format($counts['total']), 'tone' => 'primary'],
                 ['label' => 'Columns', 'value' => number_format(count($columns)), 'tone' => 'neutral'],
-                ['label' => 'Available', 'value' => number_format($available), 'tone' => 'success'],
-                ['label' => 'In Use', 'value' => number_format($inUse), 'tone' => 'info'],
-                ['label' => 'Maintenance', 'value' => number_format($maintenance), 'tone' => 'danger'],
+                ['label' => 'Available', 'value' => number_format($counts['available']), 'tone' => 'success'],
+                ['label' => 'In Use', 'value' => number_format($counts['in_use']), 'tone' => 'info'],
+                ['label' => 'Maintenance', 'value' => number_format($counts['maintenance_due']), 'tone' => 'danger'],
+                ['label' => 'Value', 'value' => number_format($stats['total_value'], 2), 'tone' => 'neutral'],
             ],
         ];
     }
@@ -1000,7 +1699,7 @@ class EquipmentController extends Controller
         $sheetRows = [];
 
         $this->addEquipmentXlsxHeaderRows($sheetRows, $meta, $sheetColumnCount);
-        // $this->addEquipmentXlsxSummaryRows($sheetRows, $meta);
+        $this->addEquipmentXlsxSummaryRows($sheetRows, $meta);
         $this->addEquipmentXlsxTitleRow($sheetRows, 6, 'Equipment Records');
         $this->addEquipmentXlsxTableHeaderRow($sheetRows, $columns, $tableHeaderRow);
 
@@ -1095,6 +1794,8 @@ class EquipmentController extends Controller
 
     private function addEquipmentXlsxHeaderRows(array &$sheetRows, array $meta, int $sheetColumnCount): void
     {
+        $filterSummary = $meta['filter_summary'] ?? ($meta['search'] ?? 'None');
+
         $sheetRows[1] = [
             'height' => 24,
             'cells' => [
@@ -1117,7 +1818,7 @@ class EquipmentController extends Controller
         $sheetRows[4] = [
             'height' => 18,
             'cells' => [
-                3 => ['value' => 'Generated: ' . ($meta['generated_at'] ?? now()->format('Y-m-d H:i:s')) . ' | Search: ' . ($meta['search'] ?? 'None'), 'type' => 'string', 'style' => 2],
+                3 => ['value' => 'Generated: ' . ($meta['generated_at'] ?? now()->format('Y-m-d H:i:s')) . ' | Filters: ' . $filterSummary, 'type' => 'string', 'style' => 2],
             ],
         ];
     }

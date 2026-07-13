@@ -171,6 +171,7 @@ use App\Http\Controllers\EquipmentController;
     Route::get('/text_blast',[TextBlastController::class,'index'])->name('text_blast');
 //Equipments
     Route::get('/equipments',[EquipmentController::class,'index'])->name('equipments.index');
+    Route::get('/equipments/reports',[EquipmentController::class,'reports'])->name('equipments.reports');
     Route::get('/equipments/export',[EquipmentController::class,'export'])->name('equipments.export');
     Route::get('/equipments/create',[EquipmentController::class,'create'])->name('equipments.create');
     Route::post('/equipments',[EquipmentController::class,'store'])->name('equipments.store');
