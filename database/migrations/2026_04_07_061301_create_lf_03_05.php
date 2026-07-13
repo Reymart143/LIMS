@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('model')->nullable();
             $table->string('equipment_no')->nullable();
             $table->string('location')->nullable();
+            $table->string('qr_code')->nullable();
+            $table->string('qr_no')->nullable();
             $table->string('month')->nullable();
             $table->string('year')->nullable();
             $table->string('date')->nullable();

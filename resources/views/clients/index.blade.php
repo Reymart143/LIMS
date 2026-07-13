@@ -90,7 +90,7 @@
                                                         </svg>
                                                         </span>
                                                     </a>
-                                                <form action="{{ route('clients.delete', $client->id) }}" method="POST" class="delete-form d-inline">
+                                                {{-- <form action="{{ route('clients.delete', $client->id) }}" method="POST" class="delete-form d-inline">
                                                     @csrf
                                                     @method('DELETE')
 
@@ -109,7 +109,7 @@
                                                             </svg>
                                                         </span>
                                                     </a>
-                                                </form>
+                                                </form> --}}
                                                 <script>
                                                     document.addEventListener('DOMContentLoaded', function() {
                                                         document.querySelectorAll('.delete-button').forEach(function(button) {

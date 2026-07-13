@@ -343,9 +343,26 @@
                                     <td><input type="text" name="shutdown_equipment[]" value="{{ $log->shutdown_equipment ?? '' }}" class="form-control-plain"></td>
                                     <td><input type="text" name="preventive_maintenance[]" value="{{ $log->preventive_maintenance ?? '' }}" class="form-control-plain"></td>
                                     <td><input type="text" name="name_analyst[]" value="{{ $log->name_analyst ?? '' }}" class="form-control-plain"></td>
-                                    <td><input type="text" name="analysis[]" value="{{ $log->analysis ?? '' }}" class="form-control-plain"></td>
-                                    <td><input type="text" name="RLA_no[]" value="{{ $log->RLA_no ?? '' }}" class="form-control-plain"></td>
-                                    <td><input type="text" name="laboratory_code[]" value="{{ $log->laboratory_code ?? '' }}" class="form-control-plain"></td>
+                                    <td>
+                                        <input type="text"
+                                            name="analysis[]"
+                                            value="{{ $log && $log->analysis ? collect(json_decode($log->analysis, true))->flatten()->implode(', ') : '' }}"
+                                            class="form-control-plain">
+                                    </td>
+
+                                    <td>
+                                        <input type="text"
+                                            name="RLA_no[]"
+                                            value="{{ $log->RLA_no ?? '' }}"
+                                            class="form-control-plain">
+                                    </td>
+
+                                    <td>
+                                        <input type="text"
+                                            name="laboratory_code[]"
+                                            value="{{ $log && $log->laboratory_code ? collect(json_decode($log->laboratory_code, true))->flatten()->implode(', ') : '' }}"
+                                            class="form-control-plain">
+                                    </td>
                                     <td><input type="text" name="remarks[]" value="{{ $log->remarks ?? '' }}" class="form-control-plain"></td>
                                     <td class="text-center align-middle no-print-export" >
                                        <a class="btn btn-sm btn-icon btn-danger removeRow" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Delete" data-bs-original-title="Delete">

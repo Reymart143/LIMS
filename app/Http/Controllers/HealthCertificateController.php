@@ -70,7 +70,6 @@ class HealthCertificateController extends Controller
             abort(404);
         }
 
-        // Check if naa nay health certificate ani nga RLA No.
         $certificate = DB::table('health_certificates')
             ->where('rla_no', $rla->RLA_no)
             ->first();

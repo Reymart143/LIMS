@@ -63,6 +63,7 @@
                                         <input type="text" name="brand_model_no" value="{{ old('brand_model_no') }}">
                                     </td>
                                 </tr>
+                                
                             </table>
 
                             <table>

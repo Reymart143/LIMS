@@ -78,9 +78,9 @@
                         <a class="nav-link {{ request()->is('users*') ? 'active' : '' }}" 
                         aria-current="page" href="{{ url('/users/index') }}">
                             <i class="icon">
-                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="28" height="28" viewBox="0 0 24 24">
-                                <image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAD1klEQVR4AeyTa0wUVxTHz51ldwf3CSwLLGyDFSoUKoIka6sYw7a1JLVpTWmFprQN6QdqaKs11gDFFpZNJba1WIu0wecHPykaNSKabAivIPFFkAVRdMUFYQfZ1ywwu+x1ZsMkPsDFD34wcTJnzr3nf+75nbm5l4AX/LwCBN3gBW8Rxlh4C2PFHYwXj2Oc4sRYFbQ6m7BgwNY9uz/7zWj4vtxQfdnwz789TR3N3RT2FbDgELbOvG9QQGFF6dbaUyc+yd/4ReehkrKqqrJtmoK8XNOIwxbzk7HkUNt9CzOK8ar5CM8EfFlZllxfXrWraP3HDSvU6psIIb8Wocl0lTq7OCcXbSneDP8dqEfXh/pbnxuQV1K07MgvBjO/EFNULG5rw57G85gdJ3HxNHkMKi3e3na4bj94sedtLvakzfkHza3/bzhqrO3mk7GN1lz6a7epo24ftOytgfZfK8x4hPqa05fKJKs/0CVAT0fDW9z8SXsKYL+7L1Pi6TrW22pYySfTFy99ji3DiVqvDzS0E5i+K+BoOX2A13WxLiDGLtRNmff+ycd4/xTgwVB/YxhyADExWIXHTFIukXHZI2SkAAS+aQhhpkEuFANNu6Y5DXvOaUX0PRxDusHa376Ziz1qxKMTbhwt06yXE0pQL1I3QaSN4WJhGQlNdgFtckvQ0KREQdnFCrMmM+tbToNQ0UiYSGoReRG8ptayB2pAHojPfohZH3DOexciEONqV0lCQOB1/A5dwzsDAnVrSpejtySmvmlMSUvvzF730UUYpVwBzTzQTfid8YpwEThtlihsuVsfiM9+HgM47nTcpt1mcDn7wD12DR70NBfg45X7u2r31N9uOKUDyrPJR9n1vcePfdVZXd2AD5Zj12BLMsAgMBO94PdZ4erlxk8xHhDP1ofHAHHxCXkgiZl2+OQglmohPHHZ6Rumlm/CZnCqwksk28w3Uod6+8hQxgNKtwOunWkEWexSGGckMAGR4AuNg/SVgTsnnxMAsRvPRmQWa+OydmRHZG35EDR62j6lBKFQBUD7QDoDIGNbQl4GsFAIox4SQL4Wopdvg6h3/4Do9yoBolYbEUq0zQlA7E3lRCRbbkKRujNoyZrv0nJyd1r9YJ1UhoOdJGGcJMCuWARWsQiy8gsBXl9FCpQZCJGpCAmXICRQlfLFOc/2w7n5jdyQu/2dih2biDU6GE6Kh7GUN0D4/lrQ/72rJjR/nZRtKnBc56sQFMAtRIuTTmoKi9CKymqBvqY2JOXHnwUoOeMHhKJpTn+WLQjAF2C79bM2w5qfjwXzzwUIVmwu/eUHPAQAAP//mvkl9QAAAAZJREFUAwAfL3JA5tx3ngAAAABJRU5ErkJggg==" x="0" y="0" width="24" height="24"/>
-                                </svg>
+                           <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+                        <image xlink:href="data:image/png;base64,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" x="0" y="0" width="24" height="24"/>
+                        </svg>
                              </i>
                             <span class="item-name">Users</span>
                         </a>
@@ -90,10 +90,9 @@
                         <a class="nav-link" data-bs-toggle="collapse" href="#horizontal-menu" role="button" aria-expanded="false" aria-controls="horizontal-menu">
                             <i class="icon">
                                 
-                                <svg class="icon-20" width="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path opacity="0.4" d="M16.191 2H7.81C4.77 2 3 3.78 3 6.83V17.16C3 20.26 4.77 22 7.81 22H16.191C19.28 22 21 20.26 21 17.16V6.83C21 3.78 19.28 2 16.191 2Z" fill="currentColor"></path>
-                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M8.07996 6.6499V6.6599C7.64896 6.6599 7.29996 7.0099 7.29996 7.4399C7.29996 7.8699 7.64896 8.2199 8.07996 8.2199H11.069C11.5 8.2199 11.85 7.8699 11.85 7.4289C11.85 6.9999 11.5 6.6499 11.069 6.6499H8.07996ZM15.92 12.7399H8.07996C7.64896 12.7399 7.29996 12.3899 7.29996 11.9599C7.29996 11.5299 7.64896 11.1789 8.07996 11.1789H15.92C16.35 11.1789 16.7 11.5299 16.7 11.9599C16.7 12.3899 16.35 12.7399 15.92 12.7399ZM15.92 17.3099H8.07996C7.77996 17.3499 7.48996 17.1999 7.32996 16.9499C7.16996 16.6899 7.16996 16.3599 7.32996 16.1099C7.48996 15.8499 7.77996 15.7099 8.07996 15.7399H15.92C16.319 15.7799 16.62 16.1199 16.62 16.5299C16.62 16.9289 16.319 17.2699 15.92 17.3099Z" fill="currentColor"></path>
-                                </svg>
+                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+                            <image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAEgUlEQVR4AZRUC1BUVRj+2GV3WRDMmUwJEqOBRBAQEnkYULwiFrZgQdFSUNlEyCl0tAZxyspkCoExAkaDQohHScsKKFqiJlQ0sLDxJmecSR4LMsNjSPfduddYoL2Q3Pm/e8/5z/d/37nnnHtZ69bZ9gsjw/XLhffWF9Q8Hi8E/3OxPNw3OexNiIeFOZ/GejsbSCrOwtfbne7P5v/75JvxTIn2aS6Xu4M8Fw0WNVL5nQRnTu6B35b1eM7WAgUF+TA3fQAvN9tFIQzzxOkTYg8TE5MTPB4vitJhAm1ADfx4sxX3RrV4fpMv7Dd4wdHFB05ufktio5svpFV5Ttt8PCREg09gFAYDrUYLV9eNCA0OXAYCEBrkC+u1q02IMpvAKAwG80cGB4fR2tbBiO6ePgN1YnIK54q/h6yjB2QvighOcjgcNwOBNBgN5J09uHK1kRHXG2+TMqBaUof4N7fjiVW9uFYrguLu0dgL5wUZT9o8KzM3tygiJDMCMBqEh72M9PfeYUTqwX2QSC+jvr4QNZUixAidseapFbCy5OP3tnEkZZaaiHN+SLSwsqoiBiaMBqXlF7H/QJoROrt6MTPzN/ILspGXLYCp6Vz55NRDNHWawWXzFjj7hkCQ/GEkWbL4OQaxmw3R6xHIPJVhBKcNDpDWNSA+zhEczsLS4pI2+Mckg9ptHtnubSIx+JYrxQtZ/zqw2GzwuNwFsLJcATbJy2R/wMfrGcy/1GotKmtH4PGSgE6bEheumTlsHd09GQ3KK6qR/PbRBaiuqaeLVWo1OTFkinQP0Gh0eCv1ElzMHJGfEI7C40n4pa4cU/dHwOZwuIwGe8jpuFCch/nYLhLSko4O9ujqGaXblLg45RIirJPw1YEzaDxcgm+CU+A1MI6u9EPob7nRx2hAVy9yEwpeQcm3cnrms+Kx3pEG9tOr1uKNzULEuIVDp9NULGmg1Wpxb3AIg0PDBgEbG2u4uIQg6NWvycz3I9b70bobCA+00CjVOCL5ZEClUuUuadB4owm7hamIDkvE/C/4+PvvwtMzCL/9KYNicsygrZ5WQtp8BUPTg5/2Dd9xJgMzSxrodDrE+kQh1DUQZ78sQlZOPqkBWCwWcrI+QmRqMA5fTYf/x68hIEM4Zpe2tTmuOCXNLt3/A0JUEzB/yRqNBgcPHUPuF+coDo0VrpGorLtNt2dvAS/6oLQoE3ZOa3Crt8V+eELhp1Qqs8m4ioAOxjdQqlQYVbRh987VNIm6Wds5gMe3oJrLAqMBpcDjsrHSiv5fUV0j6PWAVqcl0EFPdYwYjxKs0bFxjUIxt1FUuqJKgpbWEZz6rAnFN8shlTWgLDMNd3vlkNY2UBTExe9FtGgXAkN34WLNtfskaVgW0jYEi/z3o5qbW9oNGdLYl7ATA93tuHX9Z7TIG9DR3YjWn8rwV/+viBKEEQagfDiN8zlHQJZzjByGIJJkNiCbclmr13+enJbVRUiPHROTM4jYcWyso/NOsEqlki9WyKIGCKFMpdGIs3MLVdFxiXgctMv7Rol4EKldVJzS/gcAAP//26S4IQAAAAZJREFUAwC1SvqDeyEGfQAAAABJRU5ErkJggg==" x="0" y="0" width="24" height="24"/>
+                            </svg>
                             </i>
                             <span class="item-name">Documents<span class="badge rounded-pill bg-success item-name">5</span></span>
                             <i class="right-icon">
@@ -184,23 +183,9 @@
                      <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="collapse" href="#sidebar-special" role="button" aria-expanded="false" aria-controls="sidebar-special">
                             <i class="icon">
-                                <svg width="20" height="20" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- Flask Body -->
-                                    <path d="M80 20V70L35 145C29 155 36 168 48 168H152C164 168 171 155 165 145L120 70V20"
-                                        stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-
-                                    <!-- Flask Neck -->
-                                    <path d="M70 20H130" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
-
-                                    <!-- Liquid -->
-                                    <path d="M55 125C70 118 82 130 100 130C118 130 130 118 145 125V145C145 149 142 152 138 152H62C58 152 55 149 55 145V125Z"
-                                        fill="currentColor" opacity="0.25"/>
-
-                                    <!-- Bubbles -->
-                                    <circle cx="88" cy="102" r="6" fill="currentColor"/>
-                                    <circle cx="112" cy="92" r="4" fill="currentColor"/>
-                                    <circle cx="100" cy="112" r="3" fill="currentColor"/>
-                                </svg> 
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+                                    <image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAD7UlEQVR4AbRVbUhbVxh+btS4JJ1LNLHFgqRFcTCJZXSwH9swlmxYqVa7yqTCBrIP0T9l7IeMSae4tlCbMqqu26J0tBJWJQ5jdWkXZymWlRlXdEzG5rboujQfjS3mW83OOUnuvF4nFdrD+5zznvd9zvvcc++590rwhJtAQCqV6rRa7VvabUChUOzb6hoFAh0dHaOTk5N920FbW9u1RxbYQdpW5M1yZAc7knF6sSVJnx9okJ9sdCYmJjAyMiLA+Pj4Rhqbv4Ss9z7F3m/JREXA26YCPp+PFV1eXuaJKScYDLKc1+tNheiY1Yxd7U3YtfMI1C00kMKmAjk5OaioqNgSarU6VQM7IT1YA3W2BBwOQXmMTxBHQiCwaDSKz7qvoO/LMUxN3RHk/m9yD9HZm3gYjWANdxB0rOeJBCKRCOZ+2osHd2vx69xdxp2ZmYHVahWgv78fRqMRFoslU6PRnC7D7D41bh81gixkqxKdSIDjOLg8t/DbX99gLR5hLI7jwHEJuFwudHZ2wmQywW63gzwLLjMzs4wQ/1zG6gAZQwS8iQToSTVbmnHepMex+sOMWFxczD+PqqoqJkYTBQUFaGxsRF1d3fdkLihM5sxEAuFwGJ+0X8a5MzbcuHGLkejJ8fv9oEhPT0dTUxNaW1thNpvR0NCAA6QRYjaByEQCsVgM7oVngeDr+HthiS1wOp1wOBw8lEol3G43y9FOr9dnkF0mtksD6yASSEtLQ2R1CveWLJDJE2mO4yCRSASg74r5lBGDp85h+Gw3ihTZtdikJSqsS8jlcvSY3sHJswdwuPo1likqKgK5SmSEY1i6PcP8+vp6ZJ24iCMtAwzv/uAtI+QcAoGJBEKhED443of2j65jdDTxWVhcXMT09DTWPryA57ttsH9nx/z8POZKdvPFSqHM0EFezQeSjiQ58sPKygpiAR2ezqjB0v0wiwcCAdz86mvUuDi8GJNh4fxleDweRA37ESQvFyVlgMMbyBXdJpEAPSUK1SxCGIRao6BroVKpsOfnf0CL0IB22on8/HwYqithf+q/07kfCj3Jqwl4EwnIZDJ0nH4TLa0GGF59hRFzc3PBGV6AH2R3iMP38nMoLCxEXl4efGU6xqFdKZ5JL4G8hvopCATi8fhaKrFxLH+/EVcvvI1LZ2pR/vlJPh0o1QluUx00R/kkcQQCQ0NDbV1dXcME1o3o6emx/uL8w/q732Pt7e1N5YcHx66euAZ/kNRithtSwS9UIGCz2Yzkt1lJcOgRUUm+Rx8PwPeFFzHcJ7fwOh5cYUrJTiCQjG17uATPcS0c5Xvw48GLcDevL/BYBEjBeAArYw+xOkp8wXP8FwAA//8tdCztAAAABklEQVQDADqusUBxEN2oAAAAAElFTkSuQmCC" x="0" y="0" width="24" height="24"/>
+                                 </svg>
                             </i>
                              <span class="item-name">
                                      Laboratory Test
@@ -421,6 +406,94 @@
                                     <span class="item-name">Receiving & Releasing Logbook</span>
                                 </a>
                             </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#meow-menu" role="button" aria-expanded="false" aria-controls="meow-menu">
+                            <i class="icon">
+                                
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+                                <image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAEBElEQVR4AZyUD0yUdRjHv9whRQeH5YCReK4/tEaT4OrG9JI7VALPOQlbauXNNpEs1ArmbpVki+gPInM1+jNbOZw5KRUXcFy64/iT5xhKieCfIKrBcQgHlECk753P8+od4vvq0O35vO/vfX7P83zf318FgBDCQBjvkoco75bGAvNDI2PqYhdn2u+USO0zdqpcQtzSWCBoVkIydAVfIHbRijuCBLjwXHqsI+IJibGA6HQ1WjG6fxcS/2qdNinKcbyas0Wbakz7lopkExILCHCPfoEBHxbuxHsFH6NgW5EshR+UiDEc52flyjWcLssUAY4QBAEphkQkah+R5XBlBYeJCMIV2GxVqK45wt/z6fESoSICJhFQKpVwHm9Hx5keWZ7LfEFMPneuHcZULcq/yYVK8RuQeH8yMmL2YoaikwIyCNEkAgKNYEPOy1hrzpKlznEUfX29WLU6HUV5sTi8Ox3phjlAXDjwzhPA8tnRQUAlVecRQSLAI8jJ2cyLJ8uTCVp88un7yDVrYFqkoTo3WPkf0NWP4YAxhc/WLu6RCPh8PvT390mIioqGXm9ARMRM1NQcRPaaxzl/kjo3dAeHYU1bjKy5GjymVj9NnRpZgaYmBxpvorPrAsUDo6OX4BkaQtLSHxGXsl/EUnQCOl8Yaqn4zBD+eZoxdTjNFKQCCoUCvBVLdpThRjLSl4sCoaH3QX2vCicXLsVpwzKRLlMmmkwZiLhenANd4+P8uigZAS/yU7o4PPzorCl89vkOTkBwcDAWGJfA2tMLFbX9KIP4h8UQnBkexqlBD++m84prrsknL3JL8wV0/T44hU25+YEgy9btsPzahrMjIwGfvzE4MQFzQxOtJCzk80kEyBmw7/Z8jfUbXsTG18zi3Ps74uPnofjLcjzbcBzbTrWi3t0P58UBlLZ3IOlI1ZVWz9CbFPsDId2m7HS7XeCFrqjYi0NxbhxwVmHQM8BdAdKWmHCsgQ7YslV4o3cA+mprV35zS3HP2Ng8ChK3KL3lBXi+t7++Fn92UIGEGCAsBHX2n+FwHOOcAJGR0ch7621kZ+eyj++LrdQ4SwRMdor4LGxaqEeyZvIg7aw9iudXmwKJ023ICsglJ+UXQzHjHrmu2/pkBbxeLy4LXgheH/C/ANBLuDxBhXzg0VEDefkb8WCsCrPnhGHzlvXsGuXHzYgCw+dPo7vqe7GPz4HdbsO7jkacGPAgylKPKI8Cza8Y8UC4Gv7reuSfEZSWliMrywz6IRslFxISY4GWS393ruv7xbabe/kcTOe65tiyso+wb99XXHwFff9HSIwF/iXvHqLBWvuT7BUtd3U7nY1oazt52+JUc8o2PdTd3ZlaXVM5LVyunlQqkEnI/jn5RbsKAAD//yB+6GMAAAAGSURBVAMAmcoAZdfKQwEAAAAASUVORK5CYII=" x="0" y="0" width="24" height="24"/>
+                                </svg>
+                            </i>
+                            <span class="item-name">Reports</span>
+                            <i class="right-icon">
+                                <svg class="icon-18" xmlns="http://www.w3.org/2000/svg" width="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </i>
+                        </a>
+                        <ul class="sub-nav collapse" id="meow-menu" data-bs-parent="#sidebar-menu">
+                            {{-- <li class="nav-item">
+                                <a class="nav-link {{ request()->is('QM/index*') ? 'active' : '' }}" 
+                                        aria-current="page" href="{{ url('/QM/index') }}">
+                                  <i class="icon">
+                                        <svg class="icon-10" xmlns="http://www.w3.org/2000/svg" width="10" viewBox="0 0 24 24" fill="currentColor">
+                                            <g>
+                                            <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
+                                            </g>
+                                        </svg>
+                                    </i>
+                                  <i class="sidenav-mini-icon"> LR </i>
+                                  <span class="item-name"> Laboratory </span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                     <a class="nav-link {{ request()->is('SOP/index*') ? 'active' : '' }}" 
+                                        aria-current="page" href="{{ url('/SOP/index') }}">
+                                    <i class="icon">
+                                        <svg class="icon-10" xmlns="http://www.w3.org/2000/svg" width="10" viewBox="0 0 24 24" fill="currentColor">
+                                            <g>
+                                            <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
+                                            </g>
+                                        </svg>
+                                    </i>
+                                    <i class="sidenav-mini-icon"> E </i>
+                                    <span class="item-name">Equipments</span>
+                                </a>
+                            </li> --}}
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('payments.reports*') ? 'active' : '' }}" 
+                                        aria-current="page" href="{{ url('/payments.reports') }}">
+                                    <i class="icon svg-icon">
+                                        <svg class="icon-10" xmlns="http://www.w3.org/2000/svg" width="10" viewBox="0 0 24 24" fill="currentColor">
+                                            <g>
+                                            <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
+                                            </g>
+                                        </svg>
+                                    </i>
+                                    <i class="sidenav-mini-icon"> PA </i>                   
+                                    <span class="item-name">Payment Analytics</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('customers.reports*') ? 'active' : '' }}" 
+                                        aria-current="page" href="{{ url('/customers.reports') }}">
+                                    <i class="icon">
+                                        <svg class="icon-10" xmlns="http://www.w3.org/2000/svg" width="10" viewBox="0 0 24 24" fill="currentColor">
+                                            <g>
+                                            <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
+                                            </g>
+                                        </svg>
+                                    </i>
+                                    <i class="sidenav-mini-icon"> C</i>
+                                    <span class="item-name">Customer</span>
+                                </a>
+                            </li>
+                            {{-- <li class="nav-item">
+                                <a class="nav-link {{ request()->is('WI/index*') ? 'active' : '' }}" 
+                                        aria-current="page" href="{{ url('/WI/index') }}">
+                                    <i class="icon">
+                                        <svg class="icon-10" xmlns="http://www.w3.org/2000/svg" width="10" viewBox="0 0 24 24" fill="currentColor">
+                                            <g>
+                                            <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
+                                            </g>
+                                        </svg>
+                                    </i>
+                                    <i class="sidenav-mini-icon"> WI </i>
+                                    <span class="item-name">Work Instruction</span>
+                                </a>
+                            </li> --}}
                         </ul>
                     </li>
                         <li class="nav-item">

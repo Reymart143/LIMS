@@ -120,6 +120,7 @@
                                                 4 => 'Laboratory Analyst - Fish Health Unit',
                                                 5 => 'Customer Service Officer',
                                                 6 => 'Utility',
+                                                7 => 'Laboratory Analyst - Chemistry Unit',
                                             ];
                                         @endphp
 

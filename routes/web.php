@@ -23,6 +23,7 @@ use App\Http\Controllers\SterilityCheckController;
 use App\Http\Controllers\HealthCertificateController;
 use App\Http\Controllers\CitizenCharterSurveyController;
 use App\Http\Controllers\TextBlastController;
+use App\Http\Controllers\ReportController;
 
  Route::get('/login', function () {
         if (Auth::check()) {
@@ -102,6 +103,8 @@ use App\Http\Controllers\TextBlastController;
     Route::post('/update-statusJRF/{id}', [LogFormController::class, 'updateStatusJRF'])->name('update.statusJRF');
     //Equipment Logbooks // note naay duplicate aning equipment usage for viewing ra
     Route::get('/equipments_usage',[LogFormController::class,'equipments_usage'])->name('equipments_usage');
+    Route::post('/equipment.scan',[LogFormController::class,'scan'])
+    ->name('equipment.scan');
     //Sample Disposal Logbook
     Route::get('/sample_logbook',[LogFormController::class,'sample_disposal_logbook_index'])->name('sample_logbook');
     Route::get('/create_sample_logbook', [LogFormController::class, 'sample_disposal_logbook_create'])->name('create_sample_logbook');
@@ -115,6 +118,7 @@ use App\Http\Controllers\TextBlastController;
     Route::get('/equipment_plan/index', [LogFormController::class, 'equipment_plan_index'])->name('equipment_plan.index');
     Route::get('/equipment_plan/create', [LogFormController::class, 'equipment_plan_create'])->name('equipment_plan.create');
     Route::post('/equipment_plan/store', [LogFormController::class, 'equipment_plan_store'])->name('eequipment_plan.store');
+
     //Environmental Plan Form
     Route::get('/environmental_plan/index', [LogFormController::class,'environmental_plan_index'])->name('environmental_plan/index');
     Route::get('/environmental_plan/create', [LogFormController::class,'environmental_plan_create'])->name('environmental_plan/create');
@@ -168,6 +172,9 @@ use App\Http\Controllers\TextBlastController;
     Route::get('/Reporttest/download/pdf/{id}', [LogFormController::class, 'ReportTestdownloadPdf'])->name('Reporttest.download.pdf');
     //Text Blast
     Route::get('/text_blast',[TextBlastController::class,'index'])->name('text_blast');
+    //Text Blast
+    Route::get('/payments.reports',[ReportController::class,'payments'])->name('payments.reports');
+    Route::get('/customers.reports',[ReportController::class,'customers'])->name('customers.reports');
  });
     //ARTA SURVEY
     Route::get('/arta.create', [CitizenCharterSurveyController::class, 'arta'])->name('arta.create');

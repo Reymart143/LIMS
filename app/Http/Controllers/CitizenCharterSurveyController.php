@@ -134,47 +134,47 @@ class CitizenCharterSurveyController extends Controller
     }
 
     private function surveyData(Request $request, $isUpdate = false)
-{
-    $data = [
-        'control_no' => $request->control_no,
-        'language_version' => $request->language_version ?? 'tagalog',
+    {
+        $data = [
+            'control_no' => $request->control_no,
+            'language_version' => $request->language_version ?? 'tagalog',
 
-        'pinuntahang_opisina' => $request->pinuntahang_opisina,
-        'serbisyong_natanggap' => $request->serbisyong_natanggap,
+            'pinuntahang_opisina' => $request->pinuntahang_opisina,
+            'serbisyong_natanggap' => $request->serbisyong_natanggap,
 
-        'uri_ng_kliyente' => $request->uri_ng_kliyente,
-        'ikaw_ba_ay' => $request->ikaw_ba_ay,
-        'petsa' => $request->petsa,
-        'kasarian' => $request->kasarian,
-        'edad' => $request->edad,
-        'rehiyon_ng_tirahan' => $request->rehiyon_ng_tirahan,
+            'uri_ng_kliyente' => $request->uri_ng_kliyente,
+            'ikaw_ba_ay' => $request->ikaw_ba_ay,
+            'petsa' => $request->petsa,
+            'kasarian' => $request->kasarian,
+            'edad' => $request->edad,
+            'rehiyon_ng_tirahan' => $request->rehiyon_ng_tirahan,
 
-        'cc1_alam_ko_ang_cc' => $request->has('cc1_alam_ko_ang_cc') ? 1 : 0,
-        'cc1_alam_ko_hindi_ko_nakita' => $request->has('cc1_alam_ko_hindi_ko_nakita') ? 1 : 0,
-        'cc1_nalaman_ko_lang_ngayon' => $request->has('cc1_nalaman_ko_lang_ngayon') ? 1 : 0,
-        'cc1_hindi_ko_alam' => $request->has('cc1_hindi_ko_alam') ? 1 : 0,
+            'cc1_alam_ko_ang_cc' => $request->has('cc1_alam_ko_ang_cc') ? 1 : 0,
+            'cc1_alam_ko_hindi_ko_nakita' => $request->has('cc1_alam_ko_hindi_ko_nakita') ? 1 : 0,
+            'cc1_nalaman_ko_lang_ngayon' => $request->has('cc1_nalaman_ko_lang_ngayon') ? 1 : 0,
+            'cc1_hindi_ko_alam' => $request->has('cc1_hindi_ko_alam') ? 1 : 0,
 
-        'cc2_visibility' => $request->cc2_visibility,
-        'cc3_helpfulness' => $request->cc3_helpfulness,
+            'cc2_visibility' => $request->cc2_visibility,
+            'cc3_helpfulness' => $request->cc3_helpfulness,
 
-        'sqd0' => $request->sqd0,
-        'sqd1' => $request->sqd1,
-        'sqd2' => $request->sqd2,
-        'sqd3' => $request->sqd3,
-        'sqd4' => $request->sqd4,
-        'sqd5' => $request->sqd5,
-        'sqd6' => $request->sqd6,
-        'sqd7' => $request->sqd7,
-        'sqd8' => $request->sqd8,
+            'sqd0' => $request->sqd0,
+            'sqd1' => $request->sqd1,
+            'sqd2' => $request->sqd2,
+            'sqd3' => $request->sqd3,
+            'sqd4' => $request->sqd4,
+            'sqd5' => $request->sqd5,
+            'sqd6' => $request->sqd6,
+            'sqd7' => $request->sqd7,
+            'sqd8' => $request->sqd8,
 
-        'mungkahi_komento' => $request->mungkahi_komento,
-        'updated_at' => now(),
-    ];
+            'mungkahi_komento' => $request->mungkahi_komento,
+            'updated_at' => now(),
+        ];
 
-    if (!$isUpdate) {
-        $data['created_at'] = now();
+        if (!$isUpdate) {
+            $data['created_at'] = now();
+        }
+
+        return $data;
     }
-
-    return $data;
-}
 }

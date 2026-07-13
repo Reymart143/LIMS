@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('content')
-    <div class="conatiner-fluid content-inner mt-n5 py-0">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <div class="container-fluid content-inner mt-n5 py-0">
         <div>
             <div class="row">
                 
@@ -12,9 +13,200 @@
                         <div class="header-title">
                             <h4 class="card-title">EQUIPMENT USAGE AND MAINTENANCE LOGBOOK</h4>
                         </div>
-                            <a class="btn btn-sm btn-icon btn-success" data-bs-toggle="modal" data-bs-target="#addEquipmentModal"  data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Add Equipment" title="Add Equipment">
+                            
+                           <div class="modal fade" id="qrModal" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+
+                                        <div class="modal-header">
+                                            <h5>Scan Equipment</h5>
+                                            <button class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+
+                                        <div class="modal-body">
+
+                                            <label>Select RLA</label>
+
+                                            <select class="form-control mb-3" id="selected_rla">
+
+                                                <option value="">Select RLA</option>
+                                                        @php
+                                                        $rla = DB::table('lf_06_02')
+                                                            ->where('status',4)
+                                                            ->orderByDesc('id')
+                                                            ->get();
+                                                        @endphp
+                                                @foreach($rla as $item)
+
+                                                <option
+                                                    value="{{ $item->id }}"
+                                                    data-rla="{{ $item->RLA_no }}"
+                                                    data-lab="{{ $item->laboratory_code }}"
+                                                    data-analysis="{{ $item->analysis_requested }}">
+
+                                                    {{ $item->RLA_no }}
+
+                                                </option>
+
+                                                @endforeach
+
+                                            </select>
+
+                                            <div id="reader"></div>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <script>
+                                let scanner = null;
+
+                                $("#selected_rla").change(function () {
+
+                                    if ($(this).val() == "")
+                                        return;
+
+                                    if (scanner != null) {
+                                        scanner.clear().catch(() => {});
+                                    }
+
+                                    Swal.fire({
+                                        title: 'Opening Camera...',
+                                        text: 'Please wait.',
+                                        allowOutsideClick: false,
+                                        didOpen: () => {
+                                            Swal.showLoading();
+                                        }
+                                    });
+
+                                    scanner = new Html5QrcodeScanner(
+                                        "reader",
+                                        {
+                                            fps: 10,
+                                            qrbox: {
+                                                width: 280,
+                                                height: 280
+                                            },
+                                            rememberLastUsedCamera: true,
+                                            supportedScanTypes: [
+                                                Html5QrcodeScanType.SCAN_TYPE_CAMERA
+                                            ]
+                                        },
+                                        false
+                                    );
+
+                                    scanner.render(onScanSuccess);
+
+                                    setTimeout(() => {
+                                        Swal.close();
+                                    }, 800);
+
+                                });
+
+
+                                function onScanSuccess(decodedText) {
+
+                                    scanner.clear();
+
+                                    let option = $("#selected_rla option:selected");
+
+                                    // Swal.fire({
+                                    //     title: "QR Code Detected",
+                                    //     text: "Saving record...",
+                                    //     icon: "success",
+                                    //     timer: 1000,
+                                    //     showConfirmButton: false
+                                    // });
+
+                                    $.ajax({
+
+                                        url: "{{ route('equipment.scan') }}",
+
+                                        type: "POST",
+
+                                        data: {
+
+                                            _token: "{{ csrf_token() }}",
+
+                                            qr: decodedText,
+
+                                            rla: option.data("rla"),
+
+                                            laboratory_code: option.data("lab"),
+
+                                            analysis: option.data("analysis")
+
+                                        },
+
+                                        success: function (res) {
+
+                                            Swal.fire({
+                                                icon: "success",
+                                                title: "Success",
+                                                text: res.message,
+                                                timer: 1800,
+                                                showConfirmButton: false
+                                            });
+
+                                            $("#selected_rla").val("");
+
+                                            $("#qrModal").modal("hide");
+
+                                        },
+
+                                        error: function (xhr) {
+
+                                            Swal.fire({
+                                                icon: "error",
+                                                title: "Oops!",
+                                                text: xhr.responseJSON?.message ?? "Something went wrong."
+                                            });
+
+                                        }
+
+                                    });
+
+                                }
+                            </script>
+                            <style>
+                                #reader__dashboard_section_csr,
+                                    #reader__dashboard_section_swaplink,
+                                    #reader__dashboard_section button {
+                                        display: none !important;
+                                    }
+
+                                    #reader {
+                                        border: none !important;
+                                        box-shadow: none !important;
+                                    }
+
+                                    #reader video {
+                                        border-radius: 15px;
+                                        border: 3px solid #0d6efd;
+                                    }
+
+                                    #reader img {
+                                        border-radius: 15px;
+                                    }
+
+                                    #reader__scan_region {
+                                        border: none !important;
+                                    }
+                            </style>
+                            <a class="btn btn-sm btn-icon btn-success" style="margin-left:770px"
+                                data-bs-toggle="modal"
+                                data-bs-target="#qrModal"
+                                title="Scan Equipment">
+                                SCAN
+                              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="30" height="30" viewBox="0 0 30 30">
+                                 <image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAACqUlEQVR4AcyXyctOURzHH0OmXmMKOztDJGRhXFiwpEQZwkq9CxQWhIxhIVKElMiUDP8AZUHGjFmRmQxlhUSKz+f0nqfzep577+a63rfv5/x+55x7fr97znPvPeftXPtPf2li/WXcx234At8TvuGfgi6QpYl0vIB0nP572k7CCKjLZFa6UlyAwzABWqBHQi/8BTAFsrSejqGQjtMfTNtCuAszISgmXkNtNuTpB52vIEtPsjra2ntiz8BAqJm4E85KiPqNcw62wpY2NmGnwkvI0lo6WiGO0e6i/hyi+uMshpB4CI7LgQk6SDkPTLYZK97EHfw8/aTzEHh9ZB31SeAzggkaZ+mMu+skXEv8MtyPBEl/hpDPxLS3k0vdrqGESkPMZolLyFMcolnihrsrDlN4RUNME79j2BtQvjL3dErmZhLvhr6JfRp98pbT4NfnKbZsrSLgUpgLeyG8Ttq3FPvhPvwLObnjBD4PYdmdsZ8xXyGXuAqOkbzFxCdwJsPYilhCnlYTp18V2irRVxO7Obj+fp+rYCNTO2Lihzg+cX6fq2A7+X6ZGFsbT7EPnD2mdLkrbSOqO5h7dHid3OQv07gCLoIPGaZUHSDaBtgJ2pB4EJV+oNybh+mUTBoz+HGpS85THK5DJc47SRZPpfkVDTGd8d8fkFmM9bfGlKLhREmPtiGfiT/R8Qyi3EE8ip6mwbO0+Fm1naZMDaBnN3h9xE3hFm3dIOq6jom1OywSfKXmU/csLYvwz8JIyJJJV9Pp9ZE51PtA1Gscbyq8Tvi1oxR7IE8uf++cC/rm9Nn1gcKfsb7U1IO82+l4LvED7OOER/iek1023KbyKHuJnnSc/lXaHDsKa1xMrT7jUKG4Av674VKPxo+MwfesjMmUR9gZ9MYx0U6jzbGfsXX9AQAA//8C8GoTAAAABklEQVQDANfVrj3uT8DjAAAAAElFTkSuQmCC" x="0" y="0" width="30" height="30"/>
+                              </svg>
+                            </a>
+                            <a class="btn btn-sm btn-icon btn-warning" data-bs-toggle="modal" data-bs-target="#addEquipmentModal"  data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Add Equipment" title="Add Equipment">
                                 <svg class="icon-32" width="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.5 12.5537C12.2546 12.5537 14.4626 10.3171 14.4626 7.52684C14.4626 4.73663 12.2546 2.5 9.5 2.5C6.74543 2.5 4.53737 4.73663 4.53737 7.52684C4.53737 10.3171 6.74543 12.5537 9.5 12.5537ZM9.5 15.0152C5.45422 15.0152 2 15.6621 2 18.2464C2 20.8298 5.4332 21.5 9.5 21.5C13.5448 21.5 17 20.8531 17 18.2687C17 15.6844 13.5668 15.0152 9.5 15.0152ZM19.8979 9.58786H21.101C21.5962 9.58786 22 9.99731 22 10.4995C22 11.0016 21.5962 11.4111 21.101 11.4111H19.8979V12.5884C19.8979 13.0906 19.4952 13.5 18.999 13.5C18.5038 13.5 18.1 13.0906 18.1 12.5884V11.4111H16.899C16.4027 11.4111 16 11.0016 16 10.4995C16 9.99731 16.4027 9.58786 16.899 9.58786H18.1V8.41162C18.1 7.90945 18.5038 7.5 18.999 7.5C19.4952 7.5 19.8979 7.90945 19.8979 8.41162V9.58786Z" fill="currentColor"></path></svg>                        
                             </a>
+                            
                             {{-- modal for add equipments --}}
                             <div class="modal fade" id="addEquipmentModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="viewPdfModalLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-xl">

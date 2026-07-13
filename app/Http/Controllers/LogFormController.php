@@ -156,6 +156,62 @@ class LogFormController extends Controller
 
         return back()->with('success', 'Saved successfully!');
     }
+    public function scan(Request $request)
+    {
+     
+        $equipment = DB::table('lf_03_05')
+                        ->where('equipment_no',$request->qr)
+                        ->first();
+     
+        if(!$equipment){
+
+            return response()->json([
+                'status'=>false,
+                'message'=>'Equipment not found.'
+            ]);
+
+        }
+
+        DB::table('lf_03_05_logs')->insert([
+
+            'equipment_id' => $equipment->id,
+
+            'date' => now()->toDateString(),
+
+            'clean_equipment' => 1,
+
+            'check_powersupply' => 1,
+
+            'switchon_equipment' => 1,
+
+            'shutdown_equipment' => 1,
+
+            'preventive_maintenance' => null,
+
+            'name_analyst' => auth()->user()->name,
+
+            'analysis' => json_encode($request->analysis),
+
+            'RLA_no' => $request->rla,
+
+            'laboratory_code' => json_encode($request->laboratory_code),
+
+            'remarks' => null,
+
+            'created_at' => now(),
+
+            'updated_at' => now(),
+
+        ]);
+        return response()->json([
+
+            'status'=>true,
+
+            'message'=>'Equipment logged successfully.'
+
+        ]);
+
+    }
     //RLA
   public function generateRlaNo()
     {
@@ -2487,8 +2543,10 @@ class LogFormController extends Controller
 
         return view('ReceivingReleasingLogbook.index', compact('rla', 'clients'));
     }
-   public function downloadPdfReleasing()
+   public function downloadPdfReleasing(Request $request)
     {
+        $signature = $request->signature;
+
         $rla = DB::table('lf_06_02')
             ->join('clients', 'lf_06_02.user_id', '=', 'clients.id')
             ->leftJoin('lf_06_04', 'lf_06_02.id', '=', 'lf_06_04.lf_06_02_id')
@@ -2538,6 +2596,7 @@ class LogFormController extends Controller
             }
         $pdf = Pdf::loadView('ReceivingReleasingLogbook.download', [
                 'rla' => $rla,
+                'signature'=>$signature,
                 'logoSrc' => $logoSrc,
             ])
             ->setPaper('a4', 'landscape')

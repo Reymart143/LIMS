@@ -64,7 +64,7 @@
 
         .items-table th,
         .items-table td {
-            font-size: 13px;
+            font-size: 9px;
             padding: 4px 7px;
             line-height: 1.0;
         }
@@ -106,7 +106,7 @@
 
         .big {
             font-weight: bold;
-            font-size: 10px;
+            font-size: 9px;
         }
 
         .section-title {
@@ -228,7 +228,28 @@
         @endforeach
     </tbody>
 </table>
+<table style="width:100%;margin-top:40px;border:none;">
+    <tr>
+        <td style="border:none;"></td>
 
+        <td style="border:none;text-align:right;width:220px;">
+
+            @if(!empty($signature))
+                <img src="{{ $signature }}"
+                     style="height:70px;">
+            @endif
+
+            <div style="margin-top:5px;">
+                ______________________
+            </div>
+
+            <div>
+                Signature
+            </div>
+
+        </td>
+    </tr>
+</table>
 
 </body>
 </html>

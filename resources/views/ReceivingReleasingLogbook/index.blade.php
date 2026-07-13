@@ -3,6 +3,8 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
+
 <style>
     .choices {
         width: 100% !important;
@@ -185,6 +187,7 @@
         }
     }
 </style>
+
     <div class="conatiner-fluid content-inner mt-n5 py-0">
         <div>
             <div class="row">
@@ -195,10 +198,11 @@
                             <h4 class="card-title"><span class="badge bg-warning p-3">DOCUMENT CODE : LF 06-06 - SAMPLE RECEIVING AND RELEASING LOGBOOK</span></h4>
                          
                         </div>
-                          <a class="btn btn- btn-icon btn-danger"
-                            href="{{ route('releasing.download.pdf') }}" data-download
-                            data-bs-toggle="tooltip"
-                            title="Download PDF">
+                        <a class="btn btn-danger btn-icon"
+                                href="#"
+                                id="downloadPdfBtn"
+                                data-bs-toggle="tooltip"
+                                title="Download PDF">
                                 <span class="btn-inner">
                                     <svg class="icon-25" width="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M11.2301 7.29052V3.2815C11.2301 2.85523 11.5701 2.5 12.0001 2.5C12.3851 2.5 12.7113 2.79849 12.763 3.17658L12.7701 3.2815V7.29052L17.55 7.29083C19.93 7.29083 21.8853 9.23978 21.9951 11.6704L22 11.8861V16.9254C22 19.373 20.1127 21.3822 17.768 21.495L17.56 21.5H6.44C4.06 21.5 2.11409 19.5608 2.00484 17.1213L2 16.9047L2 11.8758C2 9.4281 3.87791 7.40921 6.22199 7.29585L6.43 7.29083H11.23V13.6932L9.63 12.041C9.33 11.7312 8.84 11.7312 8.54 12.041C8.39 12.1959 8.32 12.4024 8.32 12.6089C8.32 12.7659 8.3648 12.9295 8.45952 13.0679L8.54 13.1666L11.45 16.1819C11.59 16.3368 11.79 16.4194 12 16.4194C12.1667 16.4194 12.3333 16.362 12.4653 16.2533L12.54 16.1819L15.45 13.1666C15.75 12.8568 15.75 12.3508 15.45 12.041C15.1773 11.7594 14.7475 11.7338 14.4462 11.9642L14.36 12.041L12.77 13.6932V7.29083L11.2301 7.29052Z" fill="currentColor"></path>
@@ -371,7 +375,95 @@
    
  
     </div>
+<div class="modal fade" id="signatureModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
 
-    
+            <div class="modal-header">
+                <h5>Draw your Signature</h5>
+            </div>
+
+            <div class="modal-body">
+
+                <canvas id="signature-pad"
+                        style="border:1px solid #ccc;width:100%;height:200px;">
+                </canvas>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button class="btn btn-secondary" id="clearSignature">
+                    Clear
+                </button>
+
+                <button class="btn btn-primary" id="saveSignature">
+                    Download PDF
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+    <script>
+        $(document).ready(function () {
+
+    let signaturePad;
+
+    $('#downloadPdfBtn').on('click', function (e) {
+        e.preventDefault();
+
+        $('#signatureModal').modal('show');
+    });
+
+    $('#signatureModal').on('shown.bs.modal', function () {
+
+        const canvas = document.getElementById('signature-pad');
+
+        canvas.width = canvas.offsetWidth;
+        canvas.height = 200;
+
+        signaturePad = new SignaturePad(canvas);
+
+    });
+
+    $('#clearSignature').on('click', function () {
+        signaturePad.clear();
+    });
+
+    $('#saveSignature').on('click', function () {
+
+        if (signaturePad.isEmpty()) {
+            alert('Please provide your signature.');
+            return;
+        }
+
+        let signature = signaturePad.toDataURL();
+
+        let form = $('<form>', {
+            method: 'GET',
+            action: "{{ route('releasing.download.pdf') }}"
+        });
+
+        form.append($('<input>', {
+            type: 'hidden',
+            name: '_token',
+            value: "{{ csrf_token() }}"
+        }));
+
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'signature',
+            value: signature
+        }));
+
+        $('body').append(form);
+
+        form.submit();
+    });
+
+});
+    </script>
 
 @endsection
